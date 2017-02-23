@@ -17,7 +17,7 @@ enum bearing {north = 0, east = 90, south = 180, west = 270};
 
 //function to move robot forward with speed_m1 for motor 1, speed m2 for motor 2
 //and ramp_time, time to reach those speeds
-void move_forward_robot(int speed_m1, int speed_m2, int ramp_time); 
+void move_robot(int speed_m1, int speed_m2, int ramp_time); 
 
 bool turn_robot(int angle);
 bool stop_robot();
@@ -38,7 +38,7 @@ int identify_pallet();	//returns color
 bool pick_up_pallet();
 bool drop_off_pallet();
 
-void new_load(int location[2]);
+void new_load();
 
 bool write_to_file(); // writes global variables to file
 bool read_and_update(); //reads global variables from file and updates the current 				//global variables
