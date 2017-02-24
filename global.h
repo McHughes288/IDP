@@ -17,7 +17,7 @@ enum bearing {north = 0, east = 90, south = 180, west = 270};
 
 //function to move robot forward with speed_m1 for motor 1, speed m2 for motor 2
 //and ramp_time, time to reach those speeds
-void move_robot(int speed_m1, int speed_m2, int ramp_time); 
+void move_robot(int speed_m1, int speed_m2, int ramp_time = 255); 
 
 bool turn_robot(int angle);
 bool stop_robot();
