@@ -2,6 +2,7 @@
 #include <string>
 #include <cmath>
 #include <vector>
+#include <iomanip>
 
 #include "global.h"
 #include "matrix.h"
@@ -43,7 +44,7 @@ int int_matrix[18][15] = {
 {-1,  -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 {-1,  -1, -1, -1,  0, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1},
 {-1,  -1, -1, -1,  0, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1},
-{-1,  -1, -1, -1,  0, -1, -2,  0,  0,  -2, 0, -1, -1, -1, -1},
+{-1,  -1, -1, -1,  0, -1, -2,  0,  0,  -1, 0, -1, -1, -1, -1},   //x6 is set as -1 to not take thar root as there is insufficient space
 {-1,  -1,  0,  0,  0,  0,  0, -2,  0, -0,  0, -2, -1, -1, -1},
 {-1,  -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
 {-2,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
@@ -80,13 +81,50 @@ vector<int> final_x,final_y,final_n;
 
 int main()
 {	
-	cout << "start = " << int_matrix[2][4] << "  finish = " << int_matrix[5][4] << endl;
-	shortest_path(2,4,5,4);
+	cout << "     ";
+	for(int i = 0; i < 15; i++)
+	{
+		cout << setw(5) << i;
+	}
+	cout << endl;
+	
+	for(int i = 0; i < 18; i++)
+	{
+		cout << setw(5) << i;
+		for(int j = 0; j < 15; j++)
+		{
+			cout << setw(5) << string_matrix[i][j];
+		}
+		cout << endl;
+	}
+	int s_h,s_v,f_h,f_v;
+	
+	cout << "\n\nEnter start coordinates horizontal,vertical: ";
+	cin >> s_h >> s_v;
+	cout << "Enter finish coordinates horizontal,vertical: ";
+	cin >> f_h >> f_v;
+
+	shortest_path(s_v,s_h,f_v,f_h);
 	
 	cout << "Path: " << endl;
 	for(int i = 0; i < (int)final_x.size(); i++)
 	{
 		cout  << "(" << final_x[i] << "," << final_y[i] << "," << final_n[i] << ")" << endl;
+	}
+	
+	for(int i = 0; i < (int)final_x.size(); i++)
+	{
+		int_matrix[final_x[i]][final_y[i]] = final_n[i];
+	}
+	
+	for(int i = 0; i < 18; i++)
+	{
+		cout << endl;
+		
+		for(int j = 0; j < 15; j++)
+		{
+			cout << setw(5) <<  int_matrix[i][j] ;
+		}
 	}
 	
 	return 0;
@@ -112,7 +150,7 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 		return;
 	}
 	
-	else if(start_x >15 || start_y > 18 || f_x >15 || f_y > 18 )
+	else if(start_x >18 || start_y > 15 || f_x >18 || f_y > 15 )
 	{
 		cerr << "Invalid start or finish coordinate" << endl;
 		return;
@@ -298,7 +336,8 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 			
 					for( int k = 0; k < (int)path_x.size(); k++)
 					{
-	
+						bool flag = false;
+						
 						for(int n = 0; n < (int)near_x.size(); n++)
 						{
 							if(near_x[n] == path_x[k] && near_y[n] == path_y[k] && near_n[n] == path_n[k])
@@ -306,7 +345,16 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 								temp_x.push_back(path_x[k]);
 								temp_y.push_back(path_y[k]);
 								temp_n.push_back(path_n[k]);
+								flag = true;
 							}
+							if(flag)
+							{
+								break;
+							}
+						}
+						if(flag)
+						{
+							break;
 						}
 					}
 				}
