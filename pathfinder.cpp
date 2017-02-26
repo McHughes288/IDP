@@ -44,9 +44,9 @@ int int_matrix[18][15] = {
 {-1,  -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 {-1,  -1, -1, -1,  0, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1},
 {-1,  -1, -1, -1,  0, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1},
-{-1,  -1, -1, -1,  0, -1, -2,  0,  0,  -1, 0, -1, -1, -1, -1},   //x6 is set as -1 to not take thar root as there is insufficient space
-{-1,  -1,  0,  0,  0,  0,  0, -2,  0, -0,  0, -2, -1, -1, -1},
-{-1,  -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
+{-1,  -1, -1, -1,  0, -1, -1,  0,  0,  -1, 0, -1, -1, -1, -1},   //x6 is set as -1 to not take thar root as there is insufficient space
+{-1,  -1,  0,  0,  0,  0,  0, -1,  0, -0,  0, -2, -1, -1, -1}, 	 //change -2 in this and the above line to -1 to prevent bugs, since with the
+{-1,  -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},	 //current logic it is possible to go from the -2 to the next zero
 {-2,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1, -1},
 {-1,  -1,  0, -1,  0, -1,  0, -1,  0, -1,  0, -1, -1, -1, -1},
 {-1,  -1,  0,  0,  0,  0,  0, -1,  0, -1,  0, -1, -1, -1, -1},
@@ -192,7 +192,7 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 		#endif
 		int size = path_x.size();
 		
-		for(int i = 0; i < size; i++) //add adjacent cells to the list
+		for(int i = 0; i < size; i++) //add the four adjacent cells of each point of the path to the list
 		{
 			path_x.push_back(path_x[i] + 1);
 			path_y.push_back(path_y[i]);
@@ -236,9 +236,9 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 				cout << "Deleting: " << "(" << path_x[i] << "," << path_y[i] << "," << path_n[i] << ")" << endl;
 				#endif
 				
-				path_x.erase(path_x.begin() + i ); //-1 to get the ith element
-				path_y.erase(path_y.begin() + i );// -1 to get the ith element
-				path_n.erase(path_n.begin() + i );//-1 to get the ith element
+				path_x.erase(path_x.begin() + i ); //remove the element that corresponds to a wall
+				path_y.erase(path_y.begin() + i );
+				path_n.erase(path_n.begin() + i );
 				i = 0; // to avoid elements being transfered to the previous element and thus not being checked
 			}
 			
@@ -252,9 +252,9 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 		{
 			for(int j = 0; j < (int)path_x.size(); j++)
 			{
-				if(path_x[i] == path_x[j] && path_y[i] == path_y[j] && i != j)
+				if(path_x[i] == path_x[j] && path_y[i] == path_y[j] && i != j) // if x' = x, y' = y and they correspond to different elements 
 				{
-					if(path_n[i] < path_n[j])
+					if(path_n[i] < path_n[j])	//remove the element that has the smallest number required to reach that point
 					{
 						#ifdef DEBUG 
 						cout << "Deleting: " << "(" << path_x[j] << "," << path_y[j] << "," << path_n[j] << ")" << endl;
@@ -283,7 +283,7 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 		
 		counter++;
 		
-		if(counter == -1) //ie don't break
+		if(counter == -1) //ie don't break or set a number to break after a number of repetitions
 		{
 			break;
 		}
@@ -308,11 +308,11 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 				int counter = 0;
 				int steps = path_n[i];
 				
-				for(int j = 0; j <= path_n[i];j++)
-				{
+				for(int j = 0; j <= path_n[i];j++)//work backward from the final element to the start by considering
+				{				  //the next element with a number corresponding to one less than the finsish
 					counter++;
 					
-					near_x.erase(near_x.begin(),near_x.end());
+					near_x.erase(near_x.begin(),near_x.end());//clear the near vectors
 					near_y.erase(near_y.begin(),near_y.end());
 					near_n.erase(near_n.begin(),near_n.end());
 			
@@ -342,7 +342,7 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 						{
 							if(near_x[n] == path_x[k] && near_y[n] == path_y[k] && near_n[n] == path_n[k])
 							{
-								temp_x.push_back(path_x[k]);
+								temp_x.push_back(path_x[k]); //push the element at the end if the temporary vectors
 								temp_y.push_back(path_y[k]);
 								temp_n.push_back(path_n[k]);
 								flag = true;
@@ -359,13 +359,13 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 					}
 				}
 				
-				final_x.erase(final_x.begin(),final_x.end());
+				final_x.erase(final_x.begin(),final_x.end());//clear final path
 				final_y.erase(final_y.begin(),final_y.end());
 				final_n.erase(final_n.begin(),final_n.end());
 				
 				for(int k = 0; k < (int)temp_x.size(); k++)
 				{
-					final_x.insert(final_x.begin(), temp_x[k]);
+					final_x.insert(final_x.begin(), temp_x[k]);	//copy path to the final path in the correct order
 					final_y.insert(final_y.begin(), temp_y[k]);
 					final_n.insert(final_n.begin(), temp_n[k]);
 				}
