@@ -57,11 +57,13 @@ bool follow_line()
 	speed_m2 = 100;
 	
 	move_robot(speed_m1,speed_m2,255);
-	watch.start();
+	
+	stopwatch line_following_watch;	// make a new stopwatch class to keep previous one working;
+	line_following_watch.start();
 	
 	while(1) // execute until junction, junction check not yet implemented
 	{
-		if(watch.read() > 60000)
+		if(line_following_watch.read() > 60000)
 		{
 			cout << " Follow line routine active for 60 seconds" << endl;
 			return false; //stop after 20 seconds for now
