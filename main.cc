@@ -67,12 +67,19 @@ int main()
 	turn_robot(NORTH);
 	turn_robot(SOUTH);
 	
+	cout << "Place robot on start" << endl;
+	delay(10000);
 	
-	cout << "Starting follow line routine" << endl;
+	cout << "Following first line" << endl;
 	follow_line();
-	cout << "Stoping operation" << endl;
+	cout << "Following Second line" << endl;
+	follow_line();
+	cout << "Followig third line" << endl;
+	follow_line();
+	cout << "Turning on P1" << endl;
+	turn_robot(SOUTH);
+	
+	
 	move_robot(0,0,0);
-	
-	
 	return 1;
 }

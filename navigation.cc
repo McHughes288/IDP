@@ -39,16 +39,19 @@ extern const int bit7;
 bool follow_line()
 {
 	// Sensor values as bits
-	const int s_left = bit2;
-	const int s_middle = bit1;
-	const int s_right = bit0;
-	//const int s_rear = bit3;
+	const int s_rear = bit3;	// rear sensor bit
+	const int s_left = bit2;	//left sensor bit
+	const int s_middle = bit1;	//middle sensor bit 
+	const int s_right = bit0;	// right sensor bit
+	
 	int speed_m1; //motor 1 -> left
 	int speed_m2; //motor 2 -> right
 	int port_value;
 	
-	const int k1 = 15;
+	const int k1 = 15;	//constants to be added or subtracted to motor speed to change direction
 	const int k2 = 20;
+	
+	bool junction_flag = false; 
 
 	speed_m1 = 100;
 	speed_m2 = 100;
@@ -60,9 +63,10 @@ bool follow_line()
 	{
 		if(watch.read() > 60000)
 		{
-			break; //stop after 20 seconds for now
+			cout << " Follow line routine active for 60 seconds" << endl;
+			return false; //stop after 20 seconds for now
 		}
-		if(speed_m2 > 127)
+		/*if(speed_m2 > 127)
 		{
 			speed_m2  = 100;
 			speed_m1 = 100;
@@ -83,7 +87,7 @@ bool follow_line()
 			speed_m2  = 100;
 			speed_m1 = 100;
 			cerr << "The speed of motor 1 went positive" << endl;;			
-		}
+		}*/
 		cout << "Port value: ";
 		print_binary_8_bit(port_value);
 		
@@ -96,8 +100,20 @@ bool follow_line()
 		
 		port_value = rlink.request(READ_PORT_4);
 		
+		if(port_value bitand s_rear && junction_flag)
+		{
+			break;
+		}
+		
+		//1 1 1
+		else if(port_value bitand s_left && port_value bitand s_right && port_value bitand s_middle) // all sensors actice -> junction
+		{
+			junction_flag = true;	//if a junction is detected set the flag as true;
+			continue;
+		}
+		
 		// 1 1 0
-		if(port_value bitand s_middle && port_value bitand s_left) //robot is leaning to the right 
+		else if(port_value bitand s_middle && port_value bitand s_left) //robot is leaning to the right 
 		{
 			speed_m1  -= k1; //decrease speed of left motor
 			speed_m2  += k1; //increase speed of right motor
@@ -139,8 +155,8 @@ bool follow_line()
 			continue;
 		}
 	}
-	
-	return true;
+	move_robot(0,0,0);
+	return true; // junction detected, returns true
 }
 
 //returns next junction
