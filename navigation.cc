@@ -42,6 +42,7 @@ bool follow_line()
 	const int s_left = bit2;
 	const int s_middle = bit1;
 	const int s_right = bit0;
+	//const int s_rear = bit3;
 	int speed_m1; //motor 1 -> left
 	int speed_m2; //motor 2 -> right
 	int port_value;
