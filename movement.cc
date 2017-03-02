@@ -120,23 +120,20 @@ bool turn_robot(int angle) {
 	
 	move_robot(speed_m1, speed_m2);
 	
+	cout << "Starting the turn" << endl;
 	while(state != 2) {
-	
+	//if(port_value bitand s_rear && state == 0)
 		//robot is over the junction
-		if(port_value bitand s_rear && state == 0) {
-			cout << "Still on junction" << endl;
-		
-			
-		} else if (!(port_value bitand s_rear)) {
-			cout << "Off junction, turning..." << endl;
+		if (not(port_value bitand s_rear)) {
 			state = 1;
 			
 		} else if (port_value bitand s_rear && state == 1) {
 			stop_robot();
-			cout << "Stopping Turning" << endl;
 			state = 2;
+			break;
 		}
 	}
+	cout << "Stopped Turn" << endl;
 	
 	return true;
 	

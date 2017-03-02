@@ -54,17 +54,35 @@ int main()
 			return -1;
 		}
 #endif
-
+	
+	cout << "Starting in 5 seconds" << endl;
+	delay(5000);
+	
+	cout << "Following first line" << endl;
+	follow_line();
+	cout << "Following Second line" << endl;
+	follow_line();
+	cout << "Followig third line" << endl;
+	follow_line();
+	
+	return 1;
 
 	// Initialise Parameters
 	current_bearing = EAST;
 	pallets_picked_up = 0;
 	pallets_delivered = 0;
 	
+	move_robot(100,100,0);
+	delay(2000);
+	stop_robot();
+	delay(10000);
 	cout << "Start Turning test" << endl;
 	turn_robot(NORTH);
+	delay(3000);
 	turn_robot(EAST);
+	delay(3000);
 	turn_robot(NORTH);
+	delay(3000);
 	turn_robot(SOUTH);
 	
 	cout << "Place robot on start" << endl;
