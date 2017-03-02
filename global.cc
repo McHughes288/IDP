@@ -46,6 +46,6 @@ void print_binary_16_bit(int input)
 void print_hex(int input)
 {
 	char output[8];
-	sprintf(output, "%x", input);
+	sprintf(output, "%x-", input);
 	cout << output;
 }

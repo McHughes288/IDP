@@ -38,14 +38,18 @@ extern const int bit7;
 
 bool follow_line()
 {
+	// Sensor values as bits
+	const int s_left = bit2;
+	const int s_middle = bit1;
+	const int s_right = bit0;
 	int speed_m1; //motor 1 -> left
 	int speed_m2; //motor 2 -> right
 	int port_value;
 	
-	const int k1 = 3;
-	const int k2 = 5;
+	const int k1 = 15;
+	const int k2 = 20;
 
-	speed_m1 = -100;
+	speed_m1 = 100;
 	speed_m2 = 100;
 	
 	move_robot(speed_m1,speed_m2,255);
@@ -53,30 +57,30 @@ bool follow_line()
 	
 	while(1) // execute until junction, junction check not yet implemented
 	{
-		if(watch.read() > 20000)
+		if(watch.read() > 60000)
 		{
 			break; //stop after 20 seconds for now
 		}
-		if(speed_m2 < 0)
+		if(speed_m2 > 127)
 		{
-			speed_m2  = 50;
-			speed_m1 = -50;
-			cerr << "The speed of motor 2 went negative" << endl;
+			speed_m2  = 100;
+			speed_m1 = 100;
+			cerr << "The speed of motor 2 was greater than 127" << endl;
 		}
 		if(speed_m2 > 127)
 		{
 			speed_m2 = 127;
 		}
 
-		if(speed_m1 < -127)
+		if(speed_m1 > 127)
 		{
-			speed_m1 = -127;
+			speed_m1 = 127;
 		}
 		
-		if(speed_m1 > 0)
+		if(speed_m1 > 127)
 		{
-			speed_m2  = 50;
-			speed_m1 = -50;
+			speed_m2  = 100;
+			speed_m1 = 100;
 			cerr << "The speed of motor 1 went positive" << endl;;			
 		}
 		cout << "Port value: ";
@@ -84,46 +88,53 @@ bool follow_line()
 		
 		cout << "Speed_m1 = " << speed_m1 << " , and speed_m2 = " << speed_m2 << endl << endl;
 		move_robot(speed_m1,speed_m2,0);
-		delay(50);
+		delay(5);
 		
-		speed_m1 = -100;
+		speed_m1 = 100;
 		speed_m2 = 100;
 		
 		port_value = rlink.request(READ_PORT_4);
 		
-		if(port_value bitand bit1)
+		// 1 1 0
+		if(port_value bitand s_middle && port_value bitand s_left) //robot is leaning to the right 
+		{
+			speed_m1  -= k1; //decrease speed of left motor
+			speed_m2  += k1; //increase speed of right motor
+			cout << "changed speed" << endl;
+
+ 			continue; 
+		}
+		
+		// 0 1 1
+		else if(port_value bitand s_middle && port_value bitand s_right) //robot is leaning to the left
+		{
+			speed_m1 += k1; //increase speed of left motor
+			speed_m2 -= k1; //decrease speed of right motor
+			cout << "changed speed" << endl;
+			continue;
+		}
+		
+		// 0 1 0
+		else if(port_value bitand s_middle)
 		{
 			cout << "on line" << endl;
 			//normal operation, continue normally
 			continue;
 		}
 		
-		else if(port_value bitand bit1 && port_value bitand bit2) //robot is leaning to the right 
-		{
-			speed_m1  -= k1; //decrease speed of left motor, since speed_m1 is negative add k1
-			speed_m2  -= k1; //increase speed of right motor
-
- 			continue; 
-		}
-		
-		else if(port_value bitand bit1 && port_value bitand bit0) //robot is leaning to the left
-		{
-			speed_m2 += k1; //decrease speed of left motor, since speed_m1 is negative add k1+
-			speed_m1 += k1; //increase speed of right mtotor
-			continue;
-		}
-		
-		else if(port_value bitand bit0) //robot is too far left
+		 // 1 0 0
+		else if(port_value bitand s_left) //robot is too far right
 		{
 			speed_m1 -= k2;
-			speed_m2 -= k2;
+			speed_m2 += k2;
 			continue;
 		}
 		
-		else if(port_value bitand bit2) //robot is too far right
+		// 0 0 1
+		else if(port_value bitand s_right) //robot is too far left
 		{
-			speed_m2 += k2;
 			speed_m1 += k2;
+			speed_m2 -= k2;
 			continue;
 		}
 	}

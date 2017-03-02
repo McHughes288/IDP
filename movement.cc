@@ -25,6 +25,7 @@ extern int order_of_pallets_on_conveyor[6];
 
 void move_robot(int speed_m1, int speed_m2, int ramp_time = 0)
 {
+	speed_m1 = -speed_m1; // due to orientation of motors speed_m1 must be negative to go forward
 	//ramp time connot be negative or greater than 255
 
 	if(ramp_time < 0)

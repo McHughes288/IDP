@@ -123,32 +123,33 @@ int main()
 	print_binary_8_bit(val);
 	* */
 	
-	move_robot(-100,100,135);
-	delay(5000);
+	//move_robot(-100,100*1.1,135);
+	//delay(5000);
 	
-	move_robot(0,0,0);
+	//move_robot(0,0,0);
 	
-	//cout << "Starting follow line routine" << endl;
-	//follow_line();
-	//cout << "Stoping operation" << endl;
+	cout << "Starting follow line routine" << endl;
+	follow_line();
+	cout << "Stoping operation" << endl;
 	move_robot(0,0,0);
 	int speed1,speed2;
-	speed1 = -100;
+	speed1 = 100;
 	speed2 = 100;	
+	
 	while(1)
 	{
 		char choice;
-		cout << "Change Motor speeds(y/n): ";
+		cout << "Change Motor speeds(y/n):";
 		cin >> choice;
 		if(choice == 'n' || choice == 'N');
 		{
 			break;
 		}
 		
-		cout << "Enter speed 1(normal -100), previous(" << speed1 << "): ";
+		cout << "Enter speed 1,left (normal -100), previous(" << speed1 << "): ";
 		cin >> speed1;
-		cout << "Enter speed 2(normal 100), previous(" << speed2 << "): ";
-		cin >> speed1;
+		cout << "Enter speed 2, right(normal 100), previous(" << speed2 << "): ";
+		cin >> speed2;
 		move_robot(speed1,speed2,255);
 		delay(3000);
 		move_robot(0,0,0);	
