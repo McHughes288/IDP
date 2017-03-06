@@ -42,6 +42,7 @@ const int bit7 = 0b10000000;
 int main(int argc, const char **argv)
 {
 	
+    // ===== INITIALISE LINK =====
 #ifdef __arm__
 	if(!rlink.initialise())
 	{
@@ -57,14 +58,20 @@ int main(int argc, const char **argv)
 			return -1;
 		}
 #endif
-	//print_binary_8_bit(6);
-	if(argc > 1 && std::string(argv[1]) == "r")
+//print_binary_8_bit(6);
+	
+    
+    // ===== LOAD VARIABLES =====
+    
+    // load parameters from file if main started with argument r
+    if(argc > 1 && std::string(argv[1]) == "r")
 	{
 		cout << "restart" << endl;
 		cout << "Loading Variables" << endl;
 		//read_and_update();
 		current_bearing = EAST;
 	}
+    // load default parameters
 	else
 	{
 		current_bearing = EAST;
@@ -72,19 +79,39 @@ int main(int argc, const char **argv)
 		pallets_delivered = 0;
 	}
 
+    
+    // ===== TESTS =====
 	cout << "Starting in 7 seconds" << endl;
 	delay(7000);
 	
-	cout << "Start Turning test" << endl;
+	cout << "Start turning test" << endl;
 	
+    // Turn anti-clockwise
+    turn_robot(NORTH);
+    turn_robot(WEST);
+    turn_robot(SOUTH);
+    turn_robot(EAST);
+    
+    // Turn clockwise
+    turn_robot(SOUTH);
+    turn_robot(WEST);
+    turn_robot(NORTH);
+    turn_robot(EAST);
+    
+    // 180 test
+    turn_robot(WEST);
+    turn_robot(EAST);
+    
+    
+    
+    /*
 	cout << "Current bearing: " << current_bearing << endl;
 	watch.start();
 	turn_robot(NORTH);
 	cout << "Time needed: " << watch.read()/1000 << endl;
-	//stop_robot();
-	delay(5000);
+    delay(5000);
 	
-	/*cout << "Current bearing: " << current_bearing << endl;
+	cout << "Current bearing: " << current_bearing << endl;
 	turn_robot(WEST);
 	//stop_robot();
 	delay(5000);

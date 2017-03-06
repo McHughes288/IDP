@@ -32,11 +32,13 @@ extern const int bit5;
 extern const int bit6;
 extern const int bit7;
 
+// ===== MOVE =====
+
 void move_robot(int speed_m1, int speed_m2, int ramp_time = 0)
 {
 	speed_m1 = -speed_m1; // due to orientation of motors speed_m1 must be negative to go forward
-	//ramp time connot be negative or greater than 255
-
+	
+    //ramp time connot be negative or greater than 255
 	if(ramp_time < 0)
 	{
 		ramp_time = 0;
@@ -86,146 +88,179 @@ void move_robot(int speed_m1, int speed_m2, int ramp_time = 0)
 	rlink.command(MOTOR_2_GO, speed_m2);
 } 
 
+
+
+// ===== TURN =====
+
 bool turn_robot(int angle) {
-	
-	int speed_m1;
-	int speed_m2;
-	int speed = 50;
-	int angle_difference = angle - current_bearing;
-	if(angle_difference > 180)
-	{
-		angle_difference -= 360;
-	}
-	if(angle_difference < -180)
-	{
-		angle_difference += 360;
-	}
-	int counter;
-	int times;
-	bool flag_180 = false;
-	
-	
-	int port_value;
-	//const int s_rear = bit3;	// rear sensor bit
-	const int s_left = bit2;	//left sensor bit
-	const int s_middle = bit1;	//middle sensor bit 
-	const int s_right = bit0;	// right sensor bit
-	
-	
-	int state = 0; // 0 is when rear sensor is active before turning
-					// 1 is when the rear sensor isnt active as the robot is turning
-					// 2 is when the rear sensor is active again and the robot has completed a 90 degree turn
-					
+    
+    
+    int angle_difference = angle - current_bearing;
+    
+    // Makes sure angle difference is between -180 and 180 which correspond to left and right
+    if(angle_difference > 180)
+    {
+        angle_difference -= 360;
+    }
+    if(angle_difference < -180)
+    {
+        angle_difference += 360;
+    }
+    
+    cout << endl << "Start Bearing: " << current_bearing << endl;
+    cout << "Finish Bearing: " << angle << endl;
+    cout << "Angle Difference: " << angle_difference << endl;
+    
+    // Turn right if angle difference is positive
+    if (angle_difference > 0) {
+        cout << "Turning right..." << endl;
+        turn_right_90();
+        
+        // Turn again for full 180
+        if (angle_difference > 90) {
+            cout << "Turning right again..." << endl;
+            turn_right_90();
+        }
+        
+        
+    // Turn left if angle difference is negative
+    } else if (angle_difference < 0) {
+        cout << "Turning left..." << endl;
+        turn_left_90();
+        
+        // Turn again for full 180
+        if (angle_difference < 90) {
+            cout << "Turning left again..." << endl;
+            turn_left_90();
+        }
+        
+    // If angle difference is 0 do nothing
+    } else {
+        cout << "Don't need to turn" << endl;
+    }
+    
+    // NOW DONE WITHIN OTHER FUNCTIONS
+    //current_bearing = current_bearing + angle_difference;
+    
+    
+    // Check to see if the robot is in the position it should be
+    if (current_bearing == angle) {
+        cout << "Now at correct bearing" << endl;
+        return true;
+    } else {
+        cout << "Something went wrong, not at correct bearing" << endl;
+        return false;
+    }
 
-	// Set motor speeds to turn right if angle difference is positive
-	if (angle_difference > 0) {
-		cout << "turning left" << endl;
-		speed_m1 = speed;
-		speed_m2 = -speed;
-		
-	// Set motor speeds to turn left if angle difference is negative
-	} else if (angle_difference < 0) {
-		cout << "turning right" << endl;
-		speed_m1 = -speed;
-		speed_m2 = speed;
-		
-	} else {
-		speed_m1 = 0;
-		speed_m2 = 0;
-	}
-	
-	if(angle_difference == 180 || angle_difference == -180)
-	{
-		times = 2;
-		counter = 1;
-		flag_180 = true;
-	}
-	else
-	{
-		times = 1;
-		counter = 1;
-	}
-	
-	// Update current bearing
-	current_bearing = current_bearing + angle_difference;
-	/*if(current_bearing >= 360)
-	{
-		current_bearing = current_bearing - 360;
-	}
-	if(current_bearing < 0)
-	{
-		current_bearing += 360;
-	}*/
-	
-	port_value = rlink.request(READ_PORT_4);
-	
-	move_robot(speed_m1, speed_m2);
-	
-	cout << "Starting the turn" << endl;
-	while(state != 2 && (times != counter)&flag_180) {
-		
-		port_value = rlink.request(READ_PORT_4);
-
-		//robot is no longer over the junction
-		if(port_value bitand s_middle)
-		{
-			continue;
-		} else {
-			state = 1;
-			continue;
-		}
-		
-		
-		
-		if (angle_difference > 0) {
-			// robot has completed the RIGHT turn (checks left sensor)
-			if (port_value bitand s_left && state == 1) {
-				
-				
-				if(counter < times)
-				{
-					counter ++;
-					state = 0;
-				}
-				else
-				{
-					stop_robot();
-					state = 2;
-					break;
-				}
-			}
-		} else if (angle_difference < 0) {
-			// robot has completed the LEFT turn (checks right sensor)
-			if (port_value bitand s_right && state == 1) {
-
-				
-				if(counter < times)
-				{
-					
-					counter ++;
-					state = 0;
-				}
-				else
-				{
-					stop_robot();
-					state = 2;
-					break;
-				}
-		
-			}
-		} else {
-			break;
-		}
-		
-	}
-	cout << "Stopped Turn" << endl;
-	//stop_robot();
-	return true;
-	
 }
+
+bool turn_left_90() {
+    int speed_m1 = -50;
+    int speed_m2 = 50;
+    
+    int state = 0; // 0 is when rear sensor is active before turning
+    // 1 is when the rear sensor isnt active as the robot is turning
+    // 2 is when the rear sensor is active again and the robot has completed a 90 degree turn
+    
+    int port_value;
+    const int s_middle = bit1;	//middle sensor bit
+    const int s_right = bit0;	//right sensor bit
+    
+    move_robot(speed_m1, speed_m2);
+    
+    while(state != 2){
+        
+        port_value = rlink.request(READ_PORT_4);
+        
+        // robot is no longer over the junction
+        if(port_value bitand s_middle)
+        {
+            continue;
+        } else {
+            state = 1;
+            continue;
+        }
+        
+        // robot has completed the LEFT turn (checks right sensor)
+        if (port_value bitand s_right && state == 1) {
+            stop_robot();
+            state = 2;
+            break;
+        }
+        
+    }
+    
+    // Update bearing
+    current_bearing = current_bearing - 90;
+    if current_bearing < 0 {
+        current_bearing += 360;
+    }
+    
+    cout << "Stopped left turn. Current Bearing: " << current_bearing << endl;
+    
+    return true;
+    
+}
+
+
+
+bool turn_right_90() {
+    int speed_m1 = 50;
+    int speed_m2 = -50;
+    
+    int state = 0; // 0 is when rear sensor is active before turning
+    // 1 is when the rear sensor isnt active as the robot is turning
+    // 2 is when the rear sensor is active again and the robot has completed a 90 degree turn
+    
+    int port_value;
+    const int s_left = bit2;	//left sensor bit
+    const int s_middle = bit1;	//middle sensor bit
+
+    move_robot(speed_m1, speed_m2);
+
+    while(state != 2){
+        
+        port_value = rlink.request(READ_PORT_4);
+        
+        // robot is no longer over the junction
+        if(port_value bitand s_middle)
+        {
+            continue;
+        } else {
+            state = 1;
+            continue;
+        }
+        
+        // robot has completed the RIGHT turn (checks left sensor)
+        if (port_value bitand s_left && state == 1) {
+            stop_robot();
+            state = 2;
+            break;
+        }
+        
+    }
+    
+    // Update bearing
+    current_bearing = current_bearing + 90;
+    if current_bearing >= 360 {
+        current_bearing -= 360;
+    }
+    
+    cout << "Stopped right turn. Current Bearing: " << current_bearing << endl;
+
+    
+    return true;
+
+}
+
+
+
+// ===== STOP =====
 
 bool stop_robot() {
 	move_robot(0, 0);
 	return true;
 }
+
+
 
