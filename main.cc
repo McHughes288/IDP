@@ -5,6 +5,9 @@
 #include <string>
 #include <stdio.h>
 #include <delay.h>
+#include <fstream>
+#include <string>
+
 
 #include "global.h"
 #include "movement.h"
@@ -36,7 +39,7 @@ const int bit5 = 0b00100000;
 const int bit6 = 0b01000000;
 const int bit7 = 0b10000000;
 
-int main()
+int main(int argc, const char **argv)
 {
 	
 #ifdef __arm__
@@ -54,9 +57,48 @@ int main()
 			return -1;
 		}
 #endif
+	//print_binary_8_bit(6);
+	if(argc > 1 && std::string(argv[1]) == "r")
+	{
+		cout << "restart" << endl;
+		cout << "Loading Variables" << endl;
+		//read_and_update();
+		current_bearing = EAST;
+	}
+	else
+	{
+		current_bearing = EAST;
+		pallets_picked_up = 0;
+		pallets_delivered = 0;
+	}
+
+	cout << "Starting in 7 seconds" << endl;
+	delay(7000);
 	
-	cout << "Starting in 5 seconds" << endl;
+	cout << "Start Turning test" << endl;
+	
+	cout << "Current bearing: " << current_bearing << endl;
+	watch.start();
+	turn_robot(NORTH);
+	cout << "Time needed: " << watch.read()/1000 << endl;
+	//stop_robot();
 	delay(5000);
+	
+	/*cout << "Current bearing: " << current_bearing << endl;
+	turn_robot(WEST);
+	//stop_robot();
+	delay(5000);
+	
+	cout << "Current bearing: " << current_bearing << endl;
+	turn_robot(SOUTH);
+	//stop_robot();
+	delay(5000);
+
+	cout << "Current bearing: " << current_bearing << endl;
+	turn_robot(EAST);*/
+	
+	//stop_robot();
+	return 1;
 	
 	cout << "Following first line" << endl;
 	follow_line();
@@ -65,25 +107,14 @@ int main()
 	cout << "Followig third line" << endl;
 	follow_line();
 	
-	return 1;
 
-	// Initialise Parameters
-	current_bearing = EAST;
-	pallets_picked_up = 0;
-	pallets_delivered = 0;
+
 	
 	move_robot(100,100,0);
 	delay(2000);
 	stop_robot();
 	delay(10000);
-	cout << "Start Turning test" << endl;
-	turn_robot(NORTH);
-	delay(3000);
-	turn_robot(EAST);
-	delay(3000);
-	turn_robot(NORTH);
-	delay(3000);
-	turn_robot(SOUTH);
+	
 	
 	cout << "Place robot on start" << endl;
 	delay(10000);

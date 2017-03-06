@@ -46,6 +46,10 @@ extern const int bit7;
 void print_binary_8_bit(int input);
 void print_binary_16_bit(int input);
 void print_hex(int input);
+
+// ** FILE **
+bool write_to_file(); // writes global variables to file
+bool read_and_update(); //reads global variables from file and updates the current 				                      //global variables
 /*
 
 //function prototypes
@@ -85,9 +89,7 @@ int identify_pallet();	//returns color
 //void new_load();
 
 
-// ** FILE **
-bool write_to_file(); // writes global variables to file
-bool read_and_update(); //reads global variables from file and updates the current 				                      //global variables
+
 */
 
 #endif
