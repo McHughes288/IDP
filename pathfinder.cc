@@ -9,6 +9,11 @@
 
 //#define DEBUG
 
+#define NORTH 0
+#define EAST 90
+#define SOUTH 180
+#define WEST 270
+
 using namespace std;
 
 string string_matrix[18][15] = {
@@ -90,10 +95,19 @@ int coded_matrix[18][15] = {
 {-1, -1, -1, -1, -2, -1, -1,  -1, -1, -1, -1, -1, -1,  -1, -1},
 };
 
+
 void shortest_path(int start_x, int start_y, int f_x, int f_y);
+bool make_directions(int bearing);
+
 vector<int> path_x,path_y, path_n; // path[x][y][#]
 
 vector<int> final_x,final_y,final_n;
+vector<int> matrix_row,matrix_column;
+
+vector<char> directions;
+vector<int> bearing_vector;
+
+int current_bearing;
 
 int main()
 {	
@@ -142,8 +156,33 @@ int main()
 			cout << setw(5) <<  int_matrix[i][j] ;
 		}
 	}
+	cout << "\n\nMatrix vectors:" << endl;
+	cout << "Matrix column    Matrix row" << endl;
+	 
+	 for(int i = 0; i < (int)matrix_column.size();i++)
+	{
+		cout << matrix_column[i] << setw(10) << matrix_row[i] << endl;
+	}
 	
-	return 0;
+	if(!make_directions(EAST))
+	{
+		cerr << "\n\ncould not make directions!\n\n" << endl;
+	}
+	
+	cout << "\n\nPath to follow bearing wise: " << endl;
+	
+	for(int i = 0; i < (int)bearing_vector.size(); i++)
+	{
+		cout << bearing_vector[i] << endl;
+	}
+	
+	cout << "\n\nPath to follow direction wise: " << endl;
+	for(int i = 0; i < (int)directions.size(); i++)
+	{
+		cout << directions[i] << endl;
+	}
+	
+	return 1;
 }
 
 void shortest_path(int start_x, int start_y, int f_x, int f_y)
@@ -379,11 +418,17 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 				final_y.erase(final_y.begin(),final_y.end());
 				final_n.erase(final_n.begin(),final_n.end());
 				
+				matrix_row.erase(matrix_row.begin(), matrix_row.end());
+				matrix_column.erase(matrix_column.begin(),matrix_column.end());
+				
 				for(int k = 0; k < (int)temp_x.size(); k++)
 				{
 					final_x.insert(final_x.begin(), temp_x[k]);	//copy path to the final path in the correct order
 					final_y.insert(final_y.begin(), temp_y[k]);
 					final_n.insert(final_n.begin(), temp_n[k]);
+					
+					matrix_column.insert(matrix_column.begin(), temp_y[k]);//store point in matrix form as well
+					matrix_row.insert(matrix_row.begin(), temp_x[k]);
 				}
 				return;
 			}
@@ -393,5 +438,94 @@ void shortest_path(int start_x, int start_y, int f_x, int f_y)
 	}
 	
 	
+}
+
+
+bool make_directions(int bearing)
+{
+	directions.erase(directions.begin(), directions.end()); //clear directions
+	bearing_vector.erase(bearing_vector.begin(), bearing_vector.end()); //cleal bearing vector;
+	
+	int change_row, change_column; //change in rows and columns from one element to the next
+	int temporary_bearing = bearing; // temporary 
+	int direction_to_follow; // store direction to follow
+	int angle_difference;	//change in angle betweem [pomts
+	
+
+	
+	for(int i = 0; i < (int)matrix_column.size() - 1; i++)
+	{
+		change_column = matrix_column[i] - matrix_column[i+1];
+		change_row = matrix_row[i] - matrix_row[i+1];
+		  
+
+		//case where the current and next point are on the line, hence continue straight
+		if(coded_matrix[matrix_row[i]][matrix_column[i]] == 0 && coded_matrix[matrix_row[i+1]][matrix_column[i+1]] == 0)
+		{
+			continue;
+		}
+		
+		else if (change_column ==-1 && change_row == 0)
+		{
+			bearing_vector.insert(bearing_vector.end(), EAST);
+			direction_to_follow = EAST;
+			
+		}
+		
+		else if(change_column == 1 && change_row == 0)
+		{
+			bearing_vector.insert(bearing_vector.end(), WEST);
+			direction_to_follow = WEST;
+
+		}
+		
+		else if(change_column == 0 && change_row == -1)
+		{
+			bearing_vector.insert(bearing_vector.end(), SOUTH);
+			direction_to_follow = SOUTH;
+		}
+		
+		else if(change_column == 0 && change_row == 1)
+		{
+			bearing_vector.insert(bearing_vector.end(), NORTH);
+			direction_to_follow = NORTH;	
+		}
+		
+		else
+		{
+			cerr << "\n\nDirections could not be made in step: " << i << endl;
+			return false;
+		}
+		
+
+		angle_difference = temporary_bearing - direction_to_follow;
+		
+		if(angle_difference == 90)
+		{
+			directions.insert(directions.end(), 'L');
+		}
+		else if(angle_difference == -90)
+		{
+			directions.insert(directions.end(), 'R');
+		}
+		else if(angle_difference == 180 || angle_difference == -180)
+		{
+			directions.insert(directions.end(), 'U');
+		}
+		
+		else if(angle_difference == 0)
+		{
+			directions.insert(directions.end(),'S');
+		}
+		else
+		{
+			cerr << "Not specified angle difference encountered!" << endl;
+			return false;
+		}
+		
+		temporary_bearing = direction_to_follow;
+	}
+	
+	return true;
 }
 
