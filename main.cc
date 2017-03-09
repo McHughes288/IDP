@@ -7,12 +7,14 @@
 #include <delay.h>
 #include <fstream>
 #include <string>
-
+#include <cmath>
+#include <vector>
+#include <iomanip>
 
 #include "global.h"
 #include "movement.h"
 #include "navigation.h"
-//#include "pallet.h"
+#include "pallet2.h"
 //#include "file.h"
 
 using namespace std;
@@ -38,6 +40,14 @@ const int bit4 = 0b00010000;
 const int bit5 = 0b00100000;
 const int bit6 = 0b01000000;
 const int bit7 = 0b10000000;
+
+extern vector<int> path_x,path_y, path_n; // path[x][y][#]
+
+extern vector<int> final_x,final_y,final_n;
+extern vector<int> matrix_row,matrix_column;
+
+extern vector<char> directions;
+extern vector<int> bearing_vector;
 
 int main(int argc, const char **argv)
 {
@@ -81,8 +91,73 @@ int main(int argc, const char **argv)
 
     
     // ===== TESTS =====
+	
+	
+	//int colour = identify_pallet();
+	//cout << colour << endl;
+	
+	//const int s_red = bit7;
+	const int s_green = bit5;
+	//const int s_blue = bit6;
+	
+	const int r_d1_led = not bit7;
+	//const int gw_d2_led = bit6;
+	//const int b_d3_led = bit5;
+	
+	cout << "OUTPUT:" << r_d1_led << endl;
+	
+	//rlink.command(WRITE_PORT_1, 0); // only red on
+	
+	
+	//rlink.command(WRITE_PORT_4, r_d1_led);
+	
+	const int all = 0b00011111;
+	rlink.command(WRITE_PORT_1,all);
+	delay(500);
+	
+	rlink.command(WRITE_PORT_1,0);
+	delay(500);
+	
+	rlink.command(WRITE_PORT_1,0b01011111);
+	delay(500);
+	
+	while(1)
+	{
+		identify_pallet();
+		delay(1000);
+	}
+	
+	cout << identify_pallet();
+	
+	rlink.command(WRITE_PORT_1, r_d1_led);
+	rlink.command(WRITE_PORT_1, s_green);
+	/*
+	
 	cout << "Starting in 7 seconds" << endl;
 	delay(7000);
+	
+	cout << "Starting navigation routine test" << endl;
+	cout << "Bearing to Follow: " << endl;
+	
+	current_bearing = SOUTH;
+	shortest_path(14,10,3,14);
+	make_directions(SOUTH);
+	
+	for(int i = 0; i < (int)bearing_vector.size(); i++)
+	{
+		cout << bearing_vector[i] << setw(10) << directions[i] << endl;
+	}
+	
+	for(int i = 0; i < (int)bearing_vector.size(); i++)
+	{
+		turn_robot(bearing_vector[i]);
+		delay(500);
+		follow_line();
+		delay(500);
+		
+	}
+	
+	return 1;
 	
 	cout << "Start turning test" << endl;
 	
@@ -102,60 +177,6 @@ int main(int argc, const char **argv)
     turn_robot(WEST);
     turn_robot(EAST);
     
+    */
     
-    
-    /*
-	cout << "Current bearing: " << current_bearing << endl;
-	watch.start();
-	turn_robot(NORTH);
-	cout << "Time needed: " << watch.read()/1000 << endl;
-    delay(5000);
-	
-	cout << "Current bearing: " << current_bearing << endl;
-	turn_robot(WEST);
-	//stop_robot();
-	delay(5000);
-	
-	cout << "Current bearing: " << current_bearing << endl;
-	turn_robot(SOUTH);
-	//stop_robot();
-	delay(5000);
-
-	cout << "Current bearing: " << current_bearing << endl;
-	turn_robot(EAST);*/
-	
-	//stop_robot();
-	return 1;
-	
-	cout << "Following first line" << endl;
-	follow_line();
-	cout << "Following Second line" << endl;
-	follow_line();
-	cout << "Followig third line" << endl;
-	follow_line();
-	
-
-
-	
-	move_robot(100,100,0);
-	delay(2000);
-	stop_robot();
-	delay(10000);
-	
-	
-	cout << "Place robot on start" << endl;
-	delay(10000);
-	
-	cout << "Following first line" << endl;
-	follow_line();
-	cout << "Following Second line" << endl;
-	follow_line();
-	cout << "Followig third line" << endl;
-	follow_line();
-	cout << "Turning on P1" << endl;
-	turn_robot(SOUTH);
-	
-	
-	move_robot(0,0,0);
-	return 1;
 }

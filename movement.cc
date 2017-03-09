@@ -129,7 +129,7 @@ bool turn_robot(int angle) {
         turn_left_90();
         
         // Turn again for full 180
-        if (angle_difference < 90) {
+        if (angle_difference <- 90) {
             cout << "Turning left again..." << endl;
             turn_left_90();
         }
@@ -155,8 +155,8 @@ bool turn_robot(int angle) {
 }
 
 bool turn_left_90() {
-    int speed_m1 = -50;
-    int speed_m2 = 50;
+    int speed_m1 = -55;
+    int speed_m2 = 45;
     
     int state = 0; // 0 is when rear sensor is active before turning
     // 1 is when the rear sensor isnt active as the robot is turning
@@ -164,7 +164,8 @@ bool turn_left_90() {
     
     int port_value;
     const int s_middle = bit1;	//middle sensor bit
-    const int s_right = bit0;	//right sensor bit
+     const int s_left = bit2;	//left sensor bit
+    
     
     move_robot(speed_m1, speed_m2);
     
@@ -175,14 +176,13 @@ bool turn_left_90() {
         // robot is no longer over the junction
         if(port_value bitand s_middle)
         {
-            continue;
         } else {
             state = 1;
             continue;
         }
         
         // robot has completed the LEFT turn (checks right sensor)
-        if (port_value bitand s_right && state == 1) {
+        if (port_value bitand s_left && state == 1) {
             stop_robot();
             state = 2;
             break;
@@ -192,7 +192,7 @@ bool turn_left_90() {
     
     // Update bearing
     current_bearing = current_bearing - 90;
-    if current_bearing < 0 {
+    if (current_bearing < 0) {
         current_bearing += 360;
     }
     
@@ -205,17 +205,17 @@ bool turn_left_90() {
 
 
 bool turn_right_90() {
-    int speed_m1 = 50;
-    int speed_m2 = -50;
+    int speed_m1 = 55;
+    int speed_m2 = -45;
     
     int state = 0; // 0 is when rear sensor is active before turning
     // 1 is when the rear sensor isnt active as the robot is turning
     // 2 is when the rear sensor is active again and the robot has completed a 90 degree turn
     
     int port_value;
-    const int s_left = bit2;	//left sensor bit
+   
     const int s_middle = bit1;	//middle sensor bit
-
+	const int s_right = bit0;	//right sensor bit
     move_robot(speed_m1, speed_m2);
 
     while(state != 2){
@@ -225,14 +225,13 @@ bool turn_right_90() {
         // robot is no longer over the junction
         if(port_value bitand s_middle)
         {
-            continue;
         } else {
             state = 1;
             continue;
         }
         
         // robot has completed the RIGHT turn (checks left sensor)
-        if (port_value bitand s_left && state == 1) {
+        if (port_value bitand s_right && state == 1) {
             stop_robot();
             state = 2;
             break;
@@ -242,7 +241,7 @@ bool turn_right_90() {
     
     // Update bearing
     current_bearing = current_bearing + 90;
-    if current_bearing >= 360 {
+    if (current_bearing >= 360) {
         current_bearing -= 360;
     }
     

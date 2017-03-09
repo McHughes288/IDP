@@ -40,6 +40,8 @@ extern const int bit6;
 extern const int bit7;
 
 
+
+
 //enum colour {white, red, green, black}; // white = 0, red = 1 ...
 //enum bearing {north = 0, east = 90, south = 180, west = 270};
 
