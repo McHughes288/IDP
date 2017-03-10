@@ -53,6 +53,10 @@ int identify_pallet()
 	const int blue_led = 0b11011111;
 	const int all = 0b00011111;
 	
+	const int r_d1_led = 0b01111111; //bit 7 0
+	const int gw_d2_led = 0b10111111; // bit 6 0
+	const int b_d3_led = 0b11011111; // bit 7 0
+	
 	
 	rlink.command(WRITE_PORT_1, red_led);
 	delay(500);
@@ -69,30 +73,38 @@ int identify_pallet()
 	cout << "Red: " << red << "  Green: " << green << "   Blue: " << blue << endl;
 	
 	
-	rlink.command(WRITE_PORT_4,all);
+	rlink.command(WRITE_PORT_1,all);
 	delay(500);
 	all_on = rlink.request(ADC0);
 	cout << "3 white on: " << all_on << endl << endl;
 	
-	rlink.command(WRITE_PORT_4, 0xFF); // make everythin high -> off
+	rlink.command(WRITE_PORT_1, 0xFF); // make everythin high -> off
 	
-	if((red > 100 && red < 120) && (blue > 100 && blue < 120) && (green > 100 && green < 120))
+	if((red >= 75 && red <= 90) && (blue >= 85 && blue <= 110) && (green >= 40 && green <= 75))
 	{
+		cout << "White Pallet" << endl;
+		rlink.command(WRITE_PORT_4, gw_d2_led);
 		return WHITE;
 	}
 	
-	else if((red > 100 && red < 120) && (blue > 100 && blue < 120) && (green > 100 && green < 120))
+	else if((red >= 95 && red <= 125) && (blue >= 170 && blue <= 200) && (green >= 105 && green <= 125))
 	{
+		cout << "Red Pallet" << endl;
+		rlink.command(WRITE_PORT_4, r_d1_led);
 		return RED;
 	}
 	
-	else if((red > 100 && red < 120) && (blue > 100 && blue < 120) && (green > 100 && green < 120))
+	else if((red >= 126 && red <= 157) && (blue >= 140 && blue <= 190) && (green >= 105 && green <= 125))
 	{
+		cout << "Green Pallet" << endl;
+		rlink.command(WRITE_PORT_4, gw_d2_led);
 		return GREEN;
 	}
 	
-	else if((red > 100 && red < 120) && (blue > 100 && blue < 120) && (green > 100 && green < 120))
+	else if((red >= 150 && red <= 165) && (blue >= 190 && blue <= 210) && (green >= 130 && green <= 145))
 	{
+		cout << "Black Pallet" << endl;
+		rlink.command(WRITE_PORT_4, b_d3_led);
 		return BLACK;
 	}
 	
@@ -106,7 +118,7 @@ int identify_pallet()
 
 bool operate_lift(int speed_m3) {
 	
-
+	speed_m3 = -speed_m3;
 	if(speed_m3 < 0)	//negative speed are from 128-255 which is reverse
 	{
 		speed_m3 = -speed_m3 + 128;

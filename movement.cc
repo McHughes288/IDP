@@ -164,7 +164,8 @@ bool turn_left_90() {
     
     int port_value;
     const int s_middle = bit1;	//middle sensor bit
-     const int s_left = bit2;	//left sensor bit
+    //const int s_right = bit0;	//right sensor bit
+    //const int s_left = bit2;	//left sensor bit
     
     
     move_robot(speed_m1, speed_m2);
@@ -182,7 +183,7 @@ bool turn_left_90() {
         }
         
         // robot has completed the LEFT turn (checks right sensor)
-        if (port_value bitand s_left && state == 1) {
+        if (port_value bitand s_middle && state == 1) {
             stop_robot();
             state = 2;
             break;
@@ -215,7 +216,8 @@ bool turn_right_90() {
     int port_value;
    
     const int s_middle = bit1;	//middle sensor bit
-	const int s_right = bit0;	//right sensor bit
+	//const int s_right = bit0;	//right sensor bit
+	//const int s_left = bit2;	//left sensor bit
     move_robot(speed_m1, speed_m2);
 
     while(state != 2){
@@ -231,7 +233,7 @@ bool turn_right_90() {
         }
         
         // robot has completed the RIGHT turn (checks left sensor)
-        if (port_value bitand s_right && state == 1) {
+        if (port_value bitand s_middle && state == 1) {
             stop_robot();
             state = 2;
             break;

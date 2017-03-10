@@ -14,7 +14,7 @@
 #include "global.h"
 #include "movement.h"
 #include "navigation.h"
-#include "pallet2.h"
+#include "pallet.h"
 //#include "file.h"
 
 using namespace std;
@@ -71,6 +71,9 @@ int main(int argc, const char **argv)
 //print_binary_8_bit(6);
 	
     
+    
+    
+    
     // ===== LOAD VARIABLES =====
     
     // load parameters from file if main started with argument r
@@ -90,27 +93,128 @@ int main(int argc, const char **argv)
 	}
 
     
+    //operate_lift(100);
+	//delay(2000);
+	//operate_lift(0);
+    
+    
+    
     // ===== TESTS =====
 	
 	
-	//int colour = identify_pallet();
-	//cout << colour << endl;
-	
-	//const int s_red = bit7;
-	const int s_green = bit5;
-	//const int s_blue = bit6;
-	
-	const int r_d1_led = not bit7;
-	//const int gw_d2_led = bit6;
-	//const int b_d3_led = bit5;
-	
-	cout << "OUTPUT:" << r_d1_led << endl;
-	
-	//rlink.command(WRITE_PORT_1, 0); // only red on
 	
 	
-	//rlink.command(WRITE_PORT_4, r_d1_led);
+	// *** DEMO TEST 1 - Follow a line for over 0.5m
 	
+	/*
+	cout << "Starting in 7 seconds" << endl;
+	delay(7000);
+	
+	// Follow 3 lines and stop at the third junction
+	for(int i = 0; i < 3; i++)
+	{
+		follow_line();
+		delay(500);
+	}*/
+	
+	
+	
+	
+	
+	
+	// *** DEMO TEST 2 - Naviagte to P1 from start area, turn to face the lorry and operate the lift motor
+	
+	cout << "Starting in 10 seconds" << endl;
+	delay(10000);
+	
+	cout << "Starting navigation routine demo" << endl;
+	cout << "Bearing to Follow: " << endl;
+	
+	current_bearing = EAST; // Start bearing
+	shortest_path(14,4,14,10); // Calculate path to P1
+	make_directions(current_bearing); // Calculate turns at each junction and then end up facing south
+	
+	// Print the bearing vector and direction vectors
+	for(int i = 0; i < (int)bearing_vector.size(); i++)
+	{
+		cout << bearing_vector[i] << setw(10) << directions[i] << endl;
+	}
+	
+	// Loop through the turns required and follow the line between each one
+	for(int i = 0; i < (int)bearing_vector.size(); i++)
+	{
+		turn_robot(bearing_vector[i]);
+		follow_line();		
+	}
+	
+	turn_robot(SOUTH);
+	
+	// Operate the lift motor for 4s
+	//operate_lift(50);
+	//delay(4000);
+	//operate_lift(0);
+	
+	shortest_path(14,10,3,12); // Calculate path to P1
+	make_directions(current_bearing); // Calculate turns at each junction and then end up facing south
+	
+	// Print the bearing vector and direction vectors
+	for(int i = 0; i < (int)bearing_vector.size(); i++)
+	{
+		cout << bearing_vector[i] << setw(10) << directions[i] << endl;
+	}
+	
+	// Loop through the turns required and follow the line between each one
+	for(int i = 0; i < (int)bearing_vector.size(); i++)
+	{
+		turn_robot(bearing_vector[i]);
+		follow_line();
+	
+		
+	}
+	
+	
+	
+	
+	// *** DEMO TEST 3 - Identify the pallet with the LDR circuit
+	/*
+	cout << "Starting in 3 seconds" << endl;
+	delay(3000);
+	
+	
+	const int r_d1_led = 0b01111111; //bit 7 0
+	const int gw_d2_led = 0b10111111; // bit 6 0
+	const int b_d3_led = 0b11011111; // bit 7 0
+	
+	rlink.command(WRITE_PORT_4, r_d1_led);
+	delay(500);
+	rlink.command(WRITE_PORT_4, gw_d2_led);
+	delay(500);
+	rlink.command(WRITE_PORT_4, b_d3_led);
+	delay(500);
+	
+	
+	for(int i = 0; i < 40; i++)
+	{
+		identify_pallet();
+		delay(1000);
+	}
+	
+	*/
+	
+	return 1;
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
 	const int all = 0b00011111;
 	rlink.command(WRITE_PORT_1,all);
 	delay(500);
@@ -120,42 +224,21 @@ int main(int argc, const char **argv)
 	
 	rlink.command(WRITE_PORT_1,0b01011111);
 	delay(500);
+	*/
 	
-	while(1)
-	{
-		identify_pallet();
-		delay(1000);
-	}
+	//const int s_red = bit7;
+	//const int s_green = bit5;
+	//const int s_blue = bit6;
 	
-	cout << identify_pallet();
+	//const int r_d1_led = 0b01111111; //bit 7 0
+	//const int gw_d2_led = 0b10111111 // bit 6 0
+	//const int b_d3_led = 0b11011111 // bit 7 0
 	
-	rlink.command(WRITE_PORT_1, r_d1_led);
-	rlink.command(WRITE_PORT_1, s_green);
+	//rlink.command(WRITE_PORT_4, r_d1_led);
+	
 	/*
 	
-	cout << "Starting in 7 seconds" << endl;
-	delay(7000);
 	
-	cout << "Starting navigation routine test" << endl;
-	cout << "Bearing to Follow: " << endl;
-	
-	current_bearing = SOUTH;
-	shortest_path(14,10,3,14);
-	make_directions(SOUTH);
-	
-	for(int i = 0; i < (int)bearing_vector.size(); i++)
-	{
-		cout << bearing_vector[i] << setw(10) << directions[i] << endl;
-	}
-	
-	for(int i = 0; i < (int)bearing_vector.size(); i++)
-	{
-		turn_robot(bearing_vector[i]);
-		delay(500);
-		follow_line();
-		delay(500);
-		
-	}
 	
 	return 1;
 	
