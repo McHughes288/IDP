@@ -169,11 +169,11 @@ bool move_forks_one_switch(int position)
 	//to stop the lowering ifpallet no longer on forks
 	if(value bitand fork_switch)	//check if there is a pallet, needed for lowering
 	{
-		pallet_on_flag = false;//no pallet on fork
+		pallet_on_flag = true;//no pallet on fork
 	}
 	else
 	{
-		pallet_on_flag = true;//pallet on fork
+		pallet_on_flag = false;//pallet on fork
 	}
 
 
@@ -245,6 +245,17 @@ bool move_forks_one_switch(int position)
 bool move_forks(int position)	//implementation for 3 switches
 {
 	int value;
+	bool pallet_on_flag;
+
+	//to stop the lowering ifpallet no longer on forks
+	if(value bitand fork_switch)	//check if there is a pallet, needed for lowering
+	{
+		pallet_on_flag = true;//no pallet on fork
+	}
+	else
+	{
+		pallet_on_flag = false;//pallet on fork
+	}
 
 	cout << "Switches not yet set!!!" << endl;  
 	const int bottom_switch = 0b00000000;
@@ -301,6 +312,13 @@ bool move_forks(int position)	//implementation for 3 switches
 		while(1)
 		{
 			value = rlink.request(READ_PORT_1);		
+
+			if((value bitand fork_switch) == false)	//if pallet dropped and  at position wanted quit returning false
+			{
+				delay(100);
+				operate_lift(0);
+				return false;
+			}
 
 			if(position == BOTTOM)
 			{

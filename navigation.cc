@@ -308,9 +308,9 @@ bool follow_line(int time  = 0)
 	return true; // junction detected, returns true
 }
 
-//this will only run for 2-5 seconds
+//this will only run for 2-5 seconds or until a junction is detected
 //actual time to be determined while testing
-bool follow_line_reverse(int time)
+bool follow_line_reverse(int time = 0)
 {
 	// Sensor values as bits
 	const int s_rear = bit3;	// rear sensor bit
@@ -371,18 +371,11 @@ bool follow_line_reverse(int time)
 		
 		port_value = rlink.request(READ_PORT_4);
 		
-		if(port_value bitand s_rear && junction_flag)
+		if(port_value bitand s_rear)	//junction detected
 		{
 			break;
 		}
 		
-		//1 1 1
-		else if(port_value bitand s_left && port_value bitand s_right && port_value bitand s_middle) // all sensors actice -> junction
-		{
-			junction_flag = true;	//if a junction is detected set the flag as true;
-			counter = 0; // zero counter
-			continue;
-		}
 		
 		// 1 1 0
 		else if(port_value bitand s_middle && port_value bitand s_left) //robot is leaning to the right 

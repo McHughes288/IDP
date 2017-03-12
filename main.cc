@@ -71,6 +71,9 @@ void my_handler(int s)
 	// and the SIGQUIT(interrupt from keyboard again) == 3
 	printf("Caught signal: %d\n", s);
 	printf("Assuming it is ctrl-c signal the variables will be written to the file\n");
+
+	current_location[0] = current_coordinates.row;
+	current_location[1] = current_coordinates.column;
 	write_to_file();
 	exit(1);
 }
@@ -357,6 +360,7 @@ int main(int argc, const char **argv)
 
 	int colour;
 	int counter;
+	bool lift_flag = true; // to be used to check whether the lift managed to go to it's position
 
 	//pickup a pallet from P1 which is closer
 
@@ -374,6 +378,10 @@ int main(int argc, const char **argv)
 	move_forks(MIDDLE);	//pick palle up and move it to the middle position
 	colour = identify_pallet();
 	pallets_picked_up++;
+
+	follow_line_reverse();
+	current_coordinates.row = J_P1.row;
+	current_coordinates.column = J_P1.column;
 
 	while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
 	{
@@ -395,9 +403,10 @@ int main(int argc, const char **argv)
 		move_forks(TOP);
 		follow_line();
 		move_forks(MIDDLE);
-		follow_line_reverse(1500); // reverse for 1.5 seconds
-		current_coordinates.row = D31.row;
-		current_coordinates.column = D31.column;
+		follow_line_reverse(); // reverseuntil junction
+		move_forks(BOTTOM);
+		current_coordinates.row = J_D31.row;
+		current_coordinates.column = J_D31.column;
 	}
 
 	else
@@ -408,11 +417,16 @@ int main(int argc, const char **argv)
 		turn_robot(SOUTH);
 		follow_line(200);//follow line for another 0.2 seconds
 
-		move_forks(BOTTOM);
+		lift_flag = move_forks(BOTTOM);
 
-		follow_line_reverse(1500); //reverse to be able to turn without throwing pallet of the conveyor
-		current_coordinates.row = C1.row;
-		current_coordinates.column = C2.column;
+		follow_line_reverse(); //reverse to be able to turn without throwing pallet of the conveyor
+		current_coordinates.row = J_C1.row;
+		current_coordinates.column = J_C1.column;
+
+		if(lift_flag == false)
+		{
+			move_forks(BOTTOM);
+		}
 
 		order_of_pallets_on_conveyor[order_of_pallets_on_conveyor_counter] = colour;
 		order_of_pallets_on_conveyor_counter++;
@@ -426,8 +440,8 @@ int main(int argc, const char **argv)
 		make_directions();
 		navigation();			//robot will move to junction before p1
 		approach_pickup();		//routine to approach truck
-		current_coordinates.row = P1.row;	//update current coordinates
-		current_coordinates.column = P1.column
+		current_coordinates.row = P2.row;	//update current coordinates
+		current_coordinates.column = P2.column
 
 		//must flash LEDs not yet implemented
 		cout << "implement flash LEDs routine"
@@ -436,6 +450,12 @@ int main(int argc, const char **argv)
 		move_forks(MIDDLE);	//pick palle up and move it to the middle position
 		colour = identify_pallet();
 		pallets_picked_up++;
+
+		follow_line_reverse();
+		current_coordinates.row = J_P2.row;
+		current_coordinates.column = J_P2.column;
+
+
 
 		while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
 		{
@@ -457,9 +477,10 @@ int main(int argc, const char **argv)
 			move_forks(TOP);
 			follow_line();
 			move_forks(MIDDLE);
-			follow_line_reverse(1500); // reverse for 1.5 seconds
-			current_coordinates.row = D31.row;
-			current_coordinates.column = D31.column;
+			follow_line_reverse(); // reverse for 1.5 seconds
+			move_forks(BOTTOM);
+			current_coordinates.row = J_D31.row;
+			current_coordinates.column = J_D31.column;
 		}
 
 		else
@@ -470,11 +491,17 @@ int main(int argc, const char **argv)
 			turn_robot(SOUTH);
 			follow_line(200);//follow line for another 0.2 seconds
 
-			move_forks(BOTTOM);
+			move_flag = move_forks(BOTTOM);
 
-			follow_line_reverse(1500); //reverse to be able to turn without throwing pallet of the conveyor
-			current_coordinates.row = C1.row;
-			current_coordinates.column = C2.column;
+
+			follow_line_reverse(); //reverse to be able to turn without throwing pallet of the conveyor
+			current_coordinates.row = J_C1.row;
+			current_coordinates.column = J_C1.column;
+
+			if(lift_flag == false)
+			{
+				move_forks(BOTTOM);
+			}
 
 			order_of_pallets_on_conveyor[order_of_pallets_on_conveyor_counter] = colour;
 			order_of_pallets_on_conveyor_counter++;
@@ -499,6 +526,10 @@ int main(int argc, const char **argv)
 	colour = identify_pallet();
 	pallets_picked_up++;
 
+	follow_line_reverse();
+	current_location.row = J_P1.row;
+	current_location.column = J_P1.column;
+
 	while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
 	{
 		colour = identify_pallet;
@@ -519,9 +550,10 @@ int main(int argc, const char **argv)
 		move_forks(TOP);
 		follow_line();
 		move_forks(MIDDLE);
-		follow_line_reverse(1500); // reverse for 1.5 seconds
-		current_coordinates.row = D31.row;
-		current_coordinates.column = D31.column;
+		follow_line_reverse(); // reverse for 1.5 seconds
+		move_forks(BOTTOM);
+		current_coordinates.row = J_D31.row;
+		current_coordinates.column = J_D31.column;
 	}
 
 	else 
@@ -534,21 +566,30 @@ int main(int argc, const char **argv)
 		{
 			turn_robot(NORTH);
 			follow_line(0);
-			move_forks(BOTTOM);
+			lift_flag = move_forks(BOTTOM);
 
-			current_coordinates.row = D1.row;
-			current_coordinates.column = D1.column;
+			follow_line_reverse();
+			if(lift_flag == false)
+			{
+				move_forks(BOTTOM);
+			}
+			current_coordinates.row = J_D.row;
+			current_coordinates.column = J_D.column;
 		}
 
 		else
 		{
 			turn_robot(SOUTH);
 			follow_line(0);
-			move_forks(BOTTOM);
+			lift_flag = move_forks(BOTTOM);
 
-			current_coordinates.row = D2.row;
-			current_coordinates.column = D3.column;
-		}
+			follow_line_reverse();
+			if(lift_flag == false)
+			{
+				move_forks(BOTTOM);
+			}
+			current_coordinates.row = J_D.row;
+			current_coordinates.column = J_D.column;
 	}
 
 
@@ -571,8 +612,10 @@ int main(int argc, const char **argv)
 
 		move_forks(TOP);
 
-		current_coordinates.row = C2.column
-		current_coordinates.column = C2.column;
+		follow_line_reverse();
+
+		current_coordinates.row = J_C2.row;
+		current_coordinates.column = J_C2.column;
 
 		if(order_of_pallets_on_conveyor[counter] == RED);
 		{
@@ -582,11 +625,16 @@ int main(int argc, const char **argv)
 
 			turn_robot(NORTH);
 			follow_line();
-			move_forks(BOTTOM);
-			follow_line_reverse(1500); //needs calibration
+			lift_flag = move_forks(BOTTOM);
+			follow_line_reverse(); 
 
-			current_location.row = D1.row;
-			current_location.column = D1.column;
+			if(lift_flag == false)
+			{
+				move_forks(BOTTOM);
+			}
+			
+			current_coordinates.row = J_D.row;
+			current_coordinates.column = J_D.column;
 			counter++;
 		}
 
@@ -598,11 +646,16 @@ int main(int argc, const char **argv)
 
 			turn_robot(SOUTH);
 			follow_line();
-			move_forks(BOTTOM);
-			follow_line_reverse(1500); //needs calibration
+			lift_flag = move_forks(BOTTOM);
+			follow_line_reverse(); 
 
-			current_location.row = D2.row;
-			current_location.column = D2.column;
+			if(lift_flag == false)
+			{
+				move_forks(BOTTOM);
+			}
+			
+			current_coordinates.row = J_D.row;
+			current_coordinates.column = J_D.column;
 			counter++;
 		}
 
