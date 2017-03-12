@@ -32,6 +32,9 @@ extern int pallets_delivered;
 extern int current_pallet_colour;
 extern int order_of_pallets_on_conveyor[6];
 
+extern int order_of_pallets_on_conveyor_counter;
+extern int fork_height;
+
 extern const int bit0;
 extern const int bit1;
 extern const int bit2;
@@ -118,7 +121,8 @@ int identify_pallet()
 
 bool operate_lift(int speed_m3) {
 	
-	speed_m3 = -speed_m3;
+	speed_m3 = -speed_m3; //negative is up
+
 	if(speed_m3 < 0)	//negative speed are from 128-255 which is reverse
 	{
 		speed_m3 = -speed_m3 + 128;
@@ -139,4 +143,193 @@ bool operate_lift(int speed_m3) {
 	
 	return true;
 	
+}
+
+
+
+bool move_forks_one_switch(int position)
+{
+	int value;
+	bool pallet_on_flag;
+	//switch on mechanism that indicates position
+	const int mechanism_switch = 0b00000000; //to be set after testing!!
+	cout << " mechanism switch not set, returning false"
+	return false;
+
+	const int fork_switch = 0b00000000; //to be set after testing
+	cout << "fork  switch not set, returning false"
+	return false;
+
+	if(fork_height == position)
+	{
+		cout << "No change in fork height needed"
+		reutrn true;
+	}
+
+	//to stop the lowering ifpallet no longer on forks
+	if(value bitand fork_switch)	//check if there is a pallet, needed for lowering
+	{
+		pallet_on_flag = false;//no pallet on fork
+	}
+	else
+	{
+		pallet_on_flag = true;//pallet on fork
+	}
+
+
+	else if(fork_height < position)
+	{
+		//the mechanism will be above the given mark so it will have to go up
+		//one less click than normally -> hence the following line
+		fork_height--;
+		while(fork_height < position)
+		{
+			operate_lift(100);
+			value = rlink.request(READ_PORT_1);
+			
+			if(value bitand mechanism_switch)
+			{
+				fork_height++;	
+			}
+
+			delay(5);
+		}
+
+		delay(25);	//let mechanism move slighlty higher than the position of triggering
+		operate_lift(0); //stop the lift;
+		return true;
+	}
+
+	else if(fork_height > position)
+	{
+		//the mechanism will be above the given mark so it will have to go down
+		//one more click than normally -> hence the following line
+		fork_height++;
+		while(fork_height > position)
+		{
+			operate_lift(-50);		//move down slower
+			value = rlink.request(READ_PORT_1);
+			
+			if(value bitand mechanism_switch)
+			{
+				fork_height--;	
+			}
+
+			else if((value bitand fork_switch)&& pallet_on_flag) //pallet no longer restning on fork
+			{
+				delay(10);
+				operate_lift(0);
+				follow_line_reverse(2);	// move back and then turn
+			}
+
+			delay(5);
+		}
+
+		//move mechanism a bit up to be higher than the position of triggering
+
+		operate_lift(100);
+		while(1)
+		{
+			value = rlink.request(READ_PORT_1);
+			if(value bitand mechanism_switch)
+			{
+				break;
+			}
+		}
+		delay(25);
+		operate_lift(0);
+		return true;
+	}
+}
+
+bool move_forks(int position)	//implementation for 3 switches
+{
+	int value;
+
+	cout << "Switches not yet set!!!" << endl;  
+	const int bottom_switch = 0b00000000;
+	const int middle_switch = 0b00000000;
+	const int top_switch = 0b00000000;
+
+	if(position == fork_height)
+	{
+		cout << "height at the desired level" << endl;
+		return true;
+	}
+
+	else if (position > fork_height)
+	{
+		operate_lift(100);
+
+		while(1)
+		{
+
+			value = rlink.request(READ_PORT_1);		
+
+			if(position == BOTTOM)
+			{
+				if(value bitand bottom_switch)
+				{
+					break;
+				}
+			}
+
+			if(position == MIDDLE)
+			{
+				if(value bitand middle_switch)
+				{
+					break;
+				}
+			}
+
+			if(position == TOP)
+			{
+				if(value bitand top_switch)
+				{
+					break;
+				}
+			}
+		}
+
+		operate_lift(0);
+	}
+
+	else if (position < fork_height)
+	{
+		operate_lift(-75);
+
+		while(1)
+		{
+			value = rlink.request(READ_PORT_1);		
+
+			if(position == BOTTOM)
+			{
+				if(value bitand bottom_switch)
+				{
+					break;
+				}
+			}
+
+			if(position == MIDDLE)
+			{
+				if(value bitand middle_switch)
+				{
+					break;
+				}
+			}
+
+			if(position == TOP)
+			{
+				if(value bitand top_switch)
+				{
+					break;
+				}
+			}
+		}
+
+		operate_lift(0);
+	}
+
+	fork_height = position;
+	return true;
 }

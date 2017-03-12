@@ -11,6 +11,11 @@
 #include <vector>
 #include <iomanip>
 
+//following 3 libraries used for exit handler of the program
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+
 #include "global.h"
 #include "movement.h"
 #include "navigation.h"
@@ -30,6 +35,9 @@ int mode;
 int pallets_delivered; 
 int current_pallet_colour;
 int order_of_pallets_on_conveyor[6];
+//new globals
+int order_of_pallets_on_conveyor_counter; 
+int fork_height;
 
 //used for bitwise checks
 const int bit0 = 0b00000001;
@@ -48,6 +56,25 @@ extern vector<int> matrix_row,matrix_column;
 
 extern vector<char> directions;
 extern vector<int> bearing_vector;
+
+
+struct location
+{
+	int row;
+	int column;
+} start, J_C1, J_P1, P1, J_P2, P2, J_D31, D31, J_D32, D32, J_C2, J_D, D1, D2, current_coordinates;
+
+
+void my_handler(int s)
+{
+	//note that SIGINT(interrupt from keyboard -> ctrl-c) == 2
+	// and the SIGQUIT(interrupt from keyboard again) == 3
+	printf("Caught signal: %d\n", s);
+	printf("Assuming it is ctrl-c signal the variables will be written to the file\n");
+	write_to_file();
+	exit(1);
+}
+
 
 int main(int argc, const char **argv)
 {
@@ -68,12 +95,20 @@ int main(int argc, const char **argv)
 			return -1;
 		}
 #endif
-//print_binary_8_bit(6);
-	
-    
-    
-    
-    
+
+
+	// ==== Create sigaction structure and link my_handler to the interrupt caused by the signal	
+	struct sigaction sigIntHandler;
+
+	sigIntHandler.sa_handler = my_handler;	//specify routine that will excecute on signal detection
+	//The sigemptyset() function initialises the signal set pointed to by set, 
+	//such that all signals defined in this document are excluded. 
+	sigemptyset(&sigIntHandler.sa_mask);// sa_mask specifies a mask of signals which should be blocked 
+	sigIntHandler.sa_flags = 0; // sa_flags specifies a set of flags which modify the behavior of the
+       							// signal.
+
+	sigaction(SIGINT, &sigIntHandler, NULL);
+
     // ===== LOAD VARIABLES =====
     
     // load parameters from file if main started with argument r
@@ -81,8 +116,10 @@ int main(int argc, const char **argv)
 	{
 		cout << "restart" << endl;
 		cout << "Loading Variables" << endl;
-		//read_and_update();
+		read_and_update();
 		current_bearing = EAST;
+		current_location[0] = start.row;
+		current_location[1] = start.column;
 	}
     // load default parameters
 	else
@@ -90,7 +127,120 @@ int main(int argc, const char **argv)
 		current_bearing = EAST;
 		pallets_picked_up = 0;
 		pallets_delivered = 0;
+		current_location[0] = start.row;
+		current_location[1] = start.column;
+		pallets_picked_up = 0;
+		pallets_delivered = 0;
+		current_pallet_colour = -1; //no current colour
+		mode = -1; //not yet defined
+
+		next_location[0] = P1.row;	//to move to P1
+		next_location[1] = P1.column;
+
+		for(int i = 0; i < 6; i++)
+		{
+			order_of_pallets_on_conveyor[i] = -1; //ie no pallet on the conveyor
+		}
+
+		order_of_pallets_on_conveyor_counter = 0; //to be used to add the colour at the correct position
+
+		
+
+
+		//  ==== 	INITIAL CALIBRATION OF FORK MECHANISM ====
+		
+		/*
+		* 	An initial calibration of the mechanism is needed since only one switch is used
+		*	and there is no possibility of knowing where the mechanism has started from
+		*	we require that the mechanism is bellow the bottom position and then we start 
+		* 	lifting until we reach the bottom position. From there a global variable will
+		* 	be used to monitor the current height of the mechanism 
+		*/
+		/*
+
+		int val;
+		int mech_switch = 0b00000000; // to be set
+		while(1)
+		{
+
+			val = rlink.request(READ_PORT_1);//If on another port change
+			if(val bitand mech_switch)
+			{
+				operate_lift(0);	//stop lift motor
+				break;	//exit while loop
+			}
+
+			operate_lift(50);	// move lift up
+		}
+
+		*/
+		fork_height = BOTTOM;
+
+
+		write_to_file();
+
+		current_coordinates.row = 14;
+		current_coordinates.column = 4;
 	}
+
+
+
+
+
+
+	    // ==== CREATE LOCATION COORDINATES ==== 
+    /*
+    * All the columns and rows correspond to the rows and 
+    * columns of the  matrix found in navigation.cc and 
+    * each pair corresponds to a location
+    *
+    * Mostly the junctions just before each point will be 
+    * used due to the insufficient room to manoeuvre 
+    * freely around the arena
+    */
+
+
+    start.column = 14;			//Start coordinate
+	start.row = 4;
+	
+	J_C1.row = 14;				// Junction just before C1
+	J_C1.column = 10;	
+	
+	J_P1.row = 14;				//Junction just before P1
+	J_P1.column = 10;
+
+	P1.row = 16;				//Location of P1
+	P1.column = 10;
+
+	J_P2.row = 14;				//Junction just before P2
+	J_P2.column = 8;
+
+	P2.row = 14;				//Location of P2
+	P2.column = 10;
+
+	J_D31.row = 11;				//Junction before D3, on the 
+	J_D32.column = 8;			//lower part of the arena
+
+	D31.row = 9;				//Location of D3 on the lower
+	D31.column = 8;				//part of the arena
+
+	J_D32.row = 5;				//junction before D3, on the 
+	J_D32.column = 8;			//uper part of the arena
+
+	D32.row = 7;				//upper location of d3
+	D32.column = 8;
+
+	J_C2.row = 3;				//junction before C2
+	J_C2.column = 12; 
+    
+    J_D.row = 3;				//junction before D1 and D2
+	J_D.column = 12;			//same as previous
+
+	D1.row = 1;					//location of D1
+	D1.column = 12;
+
+	D2.row = 5;					//location of D2
+	D2.column = 12;
 
     
     //operate_lift(100);
@@ -163,14 +313,7 @@ int main(int argc, const char **argv)
 		cout << bearing_vector[i] << setw(10) << directions[i] << endl;
 	}
 	
-	// Loop through the turns required and follow the line between each one
-	for(int i = 0; i < (int)bearing_vector.size(); i++)
-	{
-		turn_robot(bearing_vector[i]);
-		follow_line();
-	
-		
-	}
+	navigation();
 	
 	
 	
@@ -208,11 +351,276 @@ int main(int argc, const char **argv)
 	
 	
 	
+	// ===== MAIN PROGRAMM =====
+
+
+
+	int colour;
+	int counter;
+
+	//pickup a pallet from P1 which is closer
+
+	shortest_path(current_coordinates.row,current_coordinates.column, J_P1.row, J_P1.column);	
+	make_directions();
+	navigation();			//robot will move to junction before p1
+	approach_pickup();		//routine to approach truck
+	current_coordinates.row = P1.row;	//update current coordinates
+	current_coordinates.column = P1.column
+
+	//must flash LEDs not yet implemented
+	cout << "implement flash LEDs routine"
+
+	delay(10000);
+	move_forks(MIDDLE);	//pick palle up and move it to the middle position
+	colour = identify_pallet();
+	pallets_picked_up++;
+
+	while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
+	{
+		colour = identify_pallet;
+		counter++;
+	}
+
+	if(counter == 5)	//after five consecutive errors
+	{
+		cout << "Could not Identify pallet. Assuming green" >> endl;
+		colour = GREEN;
+	}
+
+	if(colour == BLACK)	//if black deliver directly
+	{
+		shortest_path(current_coordinates.row, current_coordinates.column, J_D31.row, J_D31.column);
+		make_directions();
+		navigation(); // Will move up to the junction before D3 on the low side
+		move_forks(TOP);
+		follow_line();
+		move_forks(MIDDLE);
+		follow_line_reverse(1500); // reverse for 1.5 seconds
+		current_coordinates.row = D31.row;
+		current_coordinates.column = D31.column;
+	}
+
+	else
+	{
+		shorthes_path(current_coordinates.row, current_coordinates.column, J_C1.row, J_C1.column);
+		//calibrate the follow line time
+		cout << "Follow line time not calibrated for approaching C1" << endl;
+		turn_robot(SOUTH);
+		follow_line(200);//follow line for another 0.2 seconds
+
+		move_forks(BOTTOM);
+
+		follow_line_reverse(1500); //reverse to be able to turn without throwing pallet of the conveyor
+		current_coordinates.row = C1.row;
+		current_coordinates.column = C2.column;
+
+		order_of_pallets_on_conveyor[order_of_pallets_on_conveyor_counter] = colour;
+		order_of_pallets_on_conveyor_counter++;
+	}
+
+	//pick the next 4 pallets if possible from p2
+
+	while(pallets_picked_up < 5)
+	{
+		shortest_path(current_coordinates.row,current_coordinates.column, J_P2.row, J_P2.column);	
+		make_directions();
+		navigation();			//robot will move to junction before p1
+		approach_pickup();		//routine to approach truck
+		current_coordinates.row = P1.row;	//update current coordinates
+		current_coordinates.column = P1.column
+
+		//must flash LEDs not yet implemented
+		cout << "implement flash LEDs routine"
+
+		delay(10000);
+		move_forks(MIDDLE);	//pick palle up and move it to the middle position
+		colour = identify_pallet();
+		pallets_picked_up++;
+
+		while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
+		{
+			colour = identify_pallet;
+			counter++;
+		}
+
+		if(counter == 5)	//after five consecutive errors
+		{
+			cout << "Could not Identify pallet. Assuming green" >> endl;
+			colour = GREEN;
+		}
+
+		if(colour == BLACK)	//if black deliver directly
+		{
+			shortest_path(current_coordinates.row, current_coordinates.column, J_D31.row, J_D31.column);
+			make_directions();
+			navigation(); // Will move up to the junction before D3 on the low side
+			move_forks(TOP);
+			follow_line();
+			move_forks(MIDDLE);
+			follow_line_reverse(1500); // reverse for 1.5 seconds
+			current_coordinates.row = D31.row;
+			current_coordinates.column = D31.column;
+		}
+
+		else
+		{
+			shorthes_path(current_coordinates.row, current_coordinates.column, J_C1.row, J_C1.column);
+			//calibrate the follow line time
+			cout << "Follow line time not calibrated for approaching C1" << endl;
+			turn_robot(SOUTH);
+			follow_line(200);//follow line for another 0.2 seconds
+
+			move_forks(BOTTOM);
+
+			follow_line_reverse(1500); //reverse to be able to turn without throwing pallet of the conveyor
+			current_coordinates.row = C1.row;
+			current_coordinates.column = C2.column;
+
+			order_of_pallets_on_conveyor[order_of_pallets_on_conveyor_counter] = colour;
+			order_of_pallets_on_conveyor_counter++;
+		}
+	}
 	
-	
-	
-	
-	
+
+	//get the last pallet from P1 a
+
+	shortest_path(current_coordinates.row,current_coordinates.column, J_P1.row, J_P1.column);	
+	make_directions();
+	navigation();			//robot will move to junction before p1
+	approach_pickup();		//routine to approach truck
+	current_coordinates.row = P1.row;	//update current coordinates
+	current_coordinates.column = P1.column
+
+	//must flash LEDs not yet implemented
+	cout << "implement flash LEDs routine"
+
+	delay(10000);
+	move_forks(MIDDLE);	//pick palle up and move it to the middle position
+	colour = identify_pallet();
+	pallets_picked_up++;
+
+	while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
+	{
+		colour = identify_pallet;
+		counter++;
+	}
+
+	if(counter == 5)	//after five consecutive errors
+	{
+		cout << "Could not Identify pallet. Assuming green" >> endl;
+		colour = GREEN;
+	}
+
+	if(colour == BLACK)	//if black deliver directly
+	{
+		shortest_path(current_coordinates.row, current_coordinates.column, J_D31.row, J_D31.column);
+		make_directions();
+		navigation(); // Will move up to the junction before D3 on the low side
+		move_forks(TOP);
+		follow_line();
+		move_forks(MIDDLE);
+		follow_line_reverse(1500); // reverse for 1.5 seconds
+		current_coordinates.row = D31.row;
+		current_coordinates.column = D31.column;
+	}
+
+	else 
+	{
+		shortest_path(current_coordinates.row, current_coordinates.column, J_D.row, J_D.column);	//move on the junction between  D1 and D2
+		make_directions();
+		navigation(); 
+
+		if(colour == RED)
+		{
+			turn_robot(NORTH);
+			follow_line(0);
+			move_forks(BOTTOM);
+
+			current_coordinates.row = D1.row;
+			current_coordinates.column = D1.column;
+		}
+
+		else
+		{
+			turn_robot(SOUTH);
+			follow_line(0);
+			move_forks(BOTTOM);
+
+			current_coordinates.row = D2.row;
+			current_coordinates.column = D3.column;
+		}
+	}
+
+
+	int counter = 0;
+	while(counter < order_of_pallets_on_conveyor_counter)
+	{
+
+		if(order_of_pallets_on_conveyor[counter] == -1)
+		{
+			cout << "Trying to get a pallet where there is none" << endl;
+			break;
+		}
+
+		shortest_path(current_coordinates.row, current_coordinates.column, J_C2.row, J_C2.column);
+		make_directions();
+		navigate();
+		turn_robot(EAST); //if not facing EAST turn to face the conveyor 
+		cout << "Need to callibrate follow line time from junction to C2"
+		follow_line(600); //uncalibrated !!!!!
+
+		move_forks(TOP);
+
+		current_coordinates.row = C2.column
+		current_coordinates.column = C2.column;
+
+		if(order_of_pallets_on_conveyor[counter] == RED);
+		{
+			shortest_path(current_coordinates.row, current_coordinates.column, J_D.row, J_D.column);
+			make_directions();
+			navigate();
+
+			turn_robot(NORTH);
+			follow_line();
+			move_forks(BOTTOM);
+			follow_line_reverse(1500); //needs calibration
+
+			current_location.row = D1.row;
+			current_location.column = D1.column;
+			counter++;
+		}
+
+		else;
+		{
+			shortest_path(current_coordinates.row, current_coordinates.column, J_D.row, J_D.column);
+			make_directions();
+			navigate();
+
+			turn_robot(SOUTH);
+			follow_line();
+			move_forks(BOTTOM);
+			follow_line_reverse(1500); //needs calibration
+
+			current_location.row = D2.row;
+			current_location.column = D2.column;
+			counter++;
+		}
+
+
+	}
+
+
+	shortest_path(current_coordinates.row, current_coordinates.column, start.row, start.column);
+	make_directions();
+	navigate();
+
+	for(int i = 0; i < 8; i++)
+	{
+		turn_left_90();
+	}
+
+	return 1;
+	//by this point all 6 pallets should have been picked up
 	
 	/*
 	const int all = 0b00011111;

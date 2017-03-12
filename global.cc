@@ -24,7 +24,8 @@ extern int pallets_delivered;
 extern int current_pallet_colour;
 extern int order_of_pallets_on_conveyor[6];
 
-
+extern int order_of_pallets_on_conveyor_counter;
+extern int fork_height;
 
 void print_binary_8_bit(int input)
 {
@@ -69,6 +70,9 @@ bool write_to_file() // writes global variables to file
 	{
 		myfile << order_of_pallets_on_conveyor[i] << endl;
 	}
+	myfile << order_of_pallets_on_conveyor_counter;
+	myfile << fork_height;
+
 	myfile.close();
 	return true;
 }
@@ -91,7 +95,8 @@ bool read_and_update() //reads global variables from file and updates the curren
 	{
 		myfile >> order_of_pallets_on_conveyor[i];
 	}
-	
+	myfile >> order_of_pallets_on_conveyor_counter;
+	myfile >> fork_height;
 	myfile.close();
 	
 	return true;

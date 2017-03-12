@@ -15,6 +15,11 @@
 #define SOUTH 180
 #define WEST 270
 
+//define for heights
+#define BOTTOM 0
+#define MIDDLE 1
+#define TOP 2
+
 
 extern robot_link rlink;
 extern stopwatch watch;
@@ -29,6 +34,9 @@ extern int mode;
 extern int pallets_delivered; 
 extern int current_pallet_colour;
 extern int order_of_pallets_on_conveyor[6];
+
+extern int order_of_pallets_on_conveyor_counter;
+extern int fork_height;
 
 extern const int bit0;
 extern const int bit1;
