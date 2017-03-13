@@ -8,8 +8,7 @@ bool follow_line_reverse(int time);
 //returns next junction
 int calcuate_path(int start_location[2], int finish_location[2]);
 
-//determine whether the robot should go straight,left or right at each junction
-bool navigation(int current_location[2],int next_location[2], int bearing);
+bool navigation();
 
 void shortest_path(int start_x, int start_y, int f_x, int f_y);//calculates path
 

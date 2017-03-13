@@ -12,4 +12,6 @@ bool turn_left_90();
 
 bool stop_robot();
 
+bool approach_pickup();
+
 #endif

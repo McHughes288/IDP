@@ -153,17 +153,17 @@ bool move_forks_one_switch(int position)
 	bool pallet_on_flag;
 	//switch on mechanism that indicates position
 	const int mechanism_switch = 0b00000000; //to be set after testing!!
-	cout << " mechanism switch not set, returning false"
+	cout << " mechanism switch not set, returning false" << endl;
 	return false;
 
 	const int fork_switch = 0b00000000; //to be set after testing
-	cout << "fork  switch not set, returning false"
+	cout << "fork  switch not set, returning false" << endl;
 	return false;
 
 	if(fork_height == position)
 	{
-		cout << "No change in fork height needed"
-		reutrn true;
+		cout << "No change in fork height needed" << endl;
+		return true;
 	}
 
 	//to stop the lowering ifpallet no longer on forks
@@ -177,7 +177,7 @@ bool move_forks_one_switch(int position)
 	}
 
 
-	else if(fork_height < position)
+	if(fork_height < position)
 	{
 		//the mechanism will be above the given mark so it will have to go up
 		//one less click than normally -> hence the following line
@@ -246,6 +246,7 @@ bool move_forks(int position)	//implementation for 3 switches
 {
 	int value;
 	bool pallet_on_flag;
+	const int fork_switch = 0b00000000;
 
 	//to stop the lowering ifpallet no longer on forks
 	if(value bitand fork_switch)	//check if there is a pallet, needed for lowering
@@ -313,7 +314,7 @@ bool move_forks(int position)	//implementation for 3 switches
 		{
 			value = rlink.request(READ_PORT_1);		
 
-			if((value bitand fork_switch) == false)	//if pallet dropped and  at position wanted quit returning false
+			if((value bitand fork_switch) == false && pallet_on_flag)	//if pallet dropped and  at position wanted quit returning false
 			{
 				delay(100);
 				operate_lift(0);

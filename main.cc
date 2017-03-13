@@ -276,7 +276,7 @@ int main(int argc, const char **argv)
 	
 	
 	// *** DEMO TEST 2 - Naviagte to P1 from start area, turn to face the lorry and operate the lift motor
-	
+	/*
 	cout << "Starting in 10 seconds" << endl;
 	delay(10000);
 	
@@ -297,7 +297,7 @@ int main(int argc, const char **argv)
 	for(int i = 0; i < (int)bearing_vector.size(); i++)
 	{
 		turn_robot(bearing_vector[i]);
-		follow_line();		
+		follow_line(0);		
 	}
 	
 	turn_robot(SOUTH);
@@ -322,7 +322,7 @@ int main(int argc, const char **argv)
 	
 	
 	// *** DEMO TEST 3 - Identify the pallet with the LDR circuit
-	/*
+	//
 	cout << "Starting in 3 seconds" << endl;
 	delay(3000);
 	
@@ -347,12 +347,17 @@ int main(int argc, const char **argv)
 	
 	*/
 	
-	return 1;
+	//return 1;
 
+	cout << "STarting in 5 seconds" << endl;
+	delay(5000);
+	follow_line(0);
+	move_robot(-100,-100,100);
+	delay(2000);
+	stop_robot();
 	
-	
-	
-	
+	follow_line_reverse(1);
+	return 1;
 	
 	// ===== MAIN PROGRAMM =====
 
@@ -365,45 +370,45 @@ int main(int argc, const char **argv)
 	//pickup a pallet from P1 which is closer
 
 	shortest_path(current_coordinates.row,current_coordinates.column, J_P1.row, J_P1.column);	
-	make_directions();
+	make_directions(current_bearing);
 	navigation();			//robot will move to junction before p1
 	approach_pickup();		//routine to approach truck
 	current_coordinates.row = P1.row;	//update current coordinates
-	current_coordinates.column = P1.column
+	current_coordinates.column = P1.column;
 
 	//must flash LEDs not yet implemented
-	cout << "implement flash LEDs routine"
+	cout << "implement flash LEDs routine" << endl;
 
 	delay(10000);
 	move_forks(MIDDLE);	//pick palle up and move it to the middle position
 	colour = identify_pallet();
 	pallets_picked_up++;
 
-	follow_line_reverse();
+	follow_line_reverse(0);
 	current_coordinates.row = J_P1.row;
 	current_coordinates.column = J_P1.column;
 
 	while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
 	{
-		colour = identify_pallet;
+		colour = identify_pallet();
 		counter++;
 	}
 
 	if(counter == 5)	//after five consecutive errors
 	{
-		cout << "Could not Identify pallet. Assuming green" >> endl;
+		cout << "Could not Identify pallet. Assuming green" << endl;
 		colour = GREEN;
 	}
 
 	if(colour == BLACK)	//if black deliver directly
 	{
 		shortest_path(current_coordinates.row, current_coordinates.column, J_D31.row, J_D31.column);
-		make_directions();
+		make_directions(current_bearing);
 		navigation(); // Will move up to the junction before D3 on the low side
 		move_forks(TOP);
-		follow_line();
+		follow_line(0);
 		move_forks(MIDDLE);
-		follow_line_reverse(); // reverseuntil junction
+		follow_line_reverse(0); // reverseuntil junction
 		move_forks(BOTTOM);
 		current_coordinates.row = J_D31.row;
 		current_coordinates.column = J_D31.column;
@@ -411,7 +416,7 @@ int main(int argc, const char **argv)
 
 	else
 	{
-		shorthes_path(current_coordinates.row, current_coordinates.column, J_C1.row, J_C1.column);
+		shortest_path(current_coordinates.row, current_coordinates.column, J_C1.row, J_C1.column);
 		//calibrate the follow line time
 		cout << "Follow line time not calibrated for approaching C1" << endl;
 		turn_robot(SOUTH);
@@ -419,7 +424,7 @@ int main(int argc, const char **argv)
 
 		lift_flag = move_forks(BOTTOM);
 
-		follow_line_reverse(); //reverse to be able to turn without throwing pallet of the conveyor
+		follow_line_reverse(0); //reverse to be able to turn without throwing pallet of the conveyor
 		current_coordinates.row = J_C1.row;
 		current_coordinates.column = J_C1.column;
 
@@ -437,47 +442,48 @@ int main(int argc, const char **argv)
 	while(pallets_picked_up < 5)
 	{
 		shortest_path(current_coordinates.row,current_coordinates.column, J_P2.row, J_P2.column);	
-		make_directions();
+		make_directions(current_bearing);
 		navigation();			//robot will move to junction before p1
 		approach_pickup();		//routine to approach truck
 		current_coordinates.row = P2.row;	//update current coordinates
-		current_coordinates.column = P2.column
+		current_coordinates.column = P2.column;
 
 		//must flash LEDs not yet implemented
-		cout << "implement flash LEDs routine"
+		cout << "implement flash LEDs routine" << endl;
 
 		delay(10000);
 		move_forks(MIDDLE);	//pick palle up and move it to the middle position
 		colour = identify_pallet();
 		pallets_picked_up++;
 
-		follow_line_reverse();
+		follow_line_reverse(0);
 		current_coordinates.row = J_P2.row;
 		current_coordinates.column = J_P2.column;
 
 
-
+		counter = 0;
+		
 		while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
 		{
-			colour = identify_pallet;
+			colour = identify_pallet();
 			counter++;
 		}
 
 		if(counter == 5)	//after five consecutive errors
 		{
-			cout << "Could not Identify pallet. Assuming green" >> endl;
+			cout << "Could not Identify pallet. Assuming green" << endl;
 			colour = GREEN;
 		}
 
 		if(colour == BLACK)	//if black deliver directly
 		{
 			shortest_path(current_coordinates.row, current_coordinates.column, J_D31.row, J_D31.column);
-			make_directions();
+			make_directions(current_bearing);
 			navigation(); // Will move up to the junction before D3 on the low side
 			move_forks(TOP);
-			follow_line();
+			follow_line(0);
 			move_forks(MIDDLE);
-			follow_line_reverse(); // reverse for 1.5 seconds
+			follow_line_reverse(0); // reverse for 1.5 seconds
 			move_forks(BOTTOM);
 			current_coordinates.row = J_D31.row;
 			current_coordinates.column = J_D31.column;
@@ -485,16 +491,16 @@ int main(int argc, const char **argv)
 
 		else
 		{
-			shorthes_path(current_coordinates.row, current_coordinates.column, J_C1.row, J_C1.column);
+			shortest_path(current_coordinates.row, current_coordinates.column, J_C1.row, J_C1.column);
 			//calibrate the follow line time
 			cout << "Follow line time not calibrated for approaching C1" << endl;
 			turn_robot(SOUTH);
 			follow_line(200);//follow line for another 0.2 seconds
 
-			move_flag = move_forks(BOTTOM);
+			lift_flag = move_forks(BOTTOM);
 
 
-			follow_line_reverse(); //reverse to be able to turn without throwing pallet of the conveyor
+			follow_line_reverse(0); //reverse to be able to turn without throwing pallet of the conveyor
 			current_coordinates.row = J_C1.row;
 			current_coordinates.column = J_C1.column;
 
@@ -512,45 +518,45 @@ int main(int argc, const char **argv)
 	//get the last pallet from P1 a
 
 	shortest_path(current_coordinates.row,current_coordinates.column, J_P1.row, J_P1.column);	
-	make_directions();
+	make_directions(current_bearing);
 	navigation();			//robot will move to junction before p1
 	approach_pickup();		//routine to approach truck
 	current_coordinates.row = P1.row;	//update current coordinates
-	current_coordinates.column = P1.column
+	current_coordinates.column = P1.column;
 
 	//must flash LEDs not yet implemented
-	cout << "implement flash LEDs routine"
+	cout << "implement flash LEDs routine" << endl;
 
 	delay(10000);
 	move_forks(MIDDLE);	//pick palle up and move it to the middle position
 	colour = identify_pallet();
 	pallets_picked_up++;
 
-	follow_line_reverse();
-	current_location.row = J_P1.row;
-	current_location.column = J_P1.column;
+	follow_line_reverse(0);
+	current_coordinates.row = J_P1.row;
+	current_coordinates.column = J_P1.column;
 
 	while(colour == -1 && counter < 5)	//if colour == -1 the identify pallet cannot determine colour
 	{
-		colour = identify_pallet;
+		colour = identify_pallet();
 		counter++;
 	}
 
 	if(counter == 5)	//after five consecutive errors
 	{
-		cout << "Could not Identify pallet. Assuming green" >> endl;
+		cout << "Could not Identify pallet. Assuming green" << endl;
 		colour = GREEN;
 	}
 
 	if(colour == BLACK)	//if black deliver directly
 	{
 		shortest_path(current_coordinates.row, current_coordinates.column, J_D31.row, J_D31.column);
-		make_directions();
+		make_directions(current_bearing);
 		navigation(); // Will move up to the junction before D3 on the low side
 		move_forks(TOP);
-		follow_line();
+		follow_line(0);
 		move_forks(MIDDLE);
-		follow_line_reverse(); // reverse for 1.5 seconds
+		follow_line_reverse(0); // reverse for 1.5 seconds
 		move_forks(BOTTOM);
 		current_coordinates.row = J_D31.row;
 		current_coordinates.column = J_D31.column;
@@ -559,7 +565,7 @@ int main(int argc, const char **argv)
 	else 
 	{
 		shortest_path(current_coordinates.row, current_coordinates.column, J_D.row, J_D.column);	//move on the junction between  D1 and D2
-		make_directions();
+		make_directions(current_bearing);
 		navigation(); 
 
 		if(colour == RED)
@@ -568,7 +574,7 @@ int main(int argc, const char **argv)
 			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
 
-			follow_line_reverse();
+			follow_line_reverse(0);
 			if(lift_flag == false)
 			{
 				move_forks(BOTTOM);
@@ -583,17 +589,18 @@ int main(int argc, const char **argv)
 			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
 
-			follow_line_reverse();
+			follow_line_reverse(0);
 			if(lift_flag == false)
 			{
 				move_forks(BOTTOM);
 			}
 			current_coordinates.row = J_D.row;
 			current_coordinates.column = J_D.column;
+		}
 	}
 
 
-	int counter = 0;
+	counter = 0;
 	while(counter < order_of_pallets_on_conveyor_counter)
 	{
 
@@ -604,29 +611,29 @@ int main(int argc, const char **argv)
 		}
 
 		shortest_path(current_coordinates.row, current_coordinates.column, J_C2.row, J_C2.column);
-		make_directions();
-		navigate();
+		make_directions(current_bearing);
+		navigation();
 		turn_robot(EAST); //if not facing EAST turn to face the conveyor 
-		cout << "Need to callibrate follow line time from junction to C2"
+		cout << "Need to callibrate follow line time from junction to C2" << endl;
 		follow_line(600); //uncalibrated !!!!!
 
 		move_forks(TOP);
 
-		follow_line_reverse();
+		follow_line_reverse(0);
 
 		current_coordinates.row = J_C2.row;
 		current_coordinates.column = J_C2.column;
 
-		if(order_of_pallets_on_conveyor[counter] == RED);
+		if(order_of_pallets_on_conveyor[counter] == RED)
 		{
 			shortest_path(current_coordinates.row, current_coordinates.column, J_D.row, J_D.column);
-			make_directions();
-			navigate();
+			make_directions(current_bearing);
+			navigation();
 
 			turn_robot(NORTH);
-			follow_line();
+			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
-			follow_line_reverse(); 
+			follow_line_reverse(0); 
 
 			if(lift_flag == false)
 			{
@@ -637,17 +644,16 @@ int main(int argc, const char **argv)
 			current_coordinates.column = J_D.column;
 			counter++;
 		}
-
-		else;
+		else
 		{
 			shortest_path(current_coordinates.row, current_coordinates.column, J_D.row, J_D.column);
-			make_directions();
-			navigate();
+			make_directions(current_bearing);
+			navigation();
 
 			turn_robot(SOUTH);
-			follow_line();
+			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
-			follow_line_reverse(); 
+			follow_line_reverse(0); 
 
 			if(lift_flag == false)
 			{
@@ -664,8 +670,8 @@ int main(int argc, const char **argv)
 
 
 	shortest_path(current_coordinates.row, current_coordinates.column, start.row, start.column);
-	make_directions();
-	navigate();
+	make_directions(current_bearing);
+	navigation();
 
 	for(int i = 0; i < 8; i++)
 	{

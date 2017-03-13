@@ -130,6 +130,8 @@ vector<int> bearing_vector;
 
 bool follow_line(int time  = 0)
 {
+	int switch_value;
+	
 	// Sensor values as bits
 	const int s_rear = bit3;	// rear sensor bit
 	const int s_left = bit2;	//left sensor bit
@@ -150,8 +152,6 @@ bool follow_line(int time  = 0)
 								//used afterwords in conjucntion with the rear sensor to stop
 								//at a junction
 
-	bool timer_flag = false; // flag to be used to indicate wheter we want a timed line following
-							 //or one that follows the line to the next junction;
 	
 	int previous_speed_m1 = 100;	//hold previous values for motors to use after turning 
 	int previous_speed_m2 = 100;	//when the line is lost
@@ -322,15 +322,11 @@ bool follow_line_reverse(int time = 0)
 	int speed_m2; //motor 2 -> right
 	int port_value;
 	
+	bool rear_sensor_flag;
+	
 	const int k1 = 15;	//constants to be added or subtracted to motor speed to change direction
 	const int k2 = 27;
 	
-	bool junction_flag = false; //flag set to true when the fron 3 sensors detect a junction
-								//used afterwords in conjucntion with the rear sensor to stop
-								//at a junction
-
-	bool timer_flag = false; // flag to be used to indicate wheter we want a timed line following
-							 //or one that follows the line to the next junction;
 	
 	int previous_speed_m1 = 100;	//hold previous values for motors to use after turning 
 	int previous_speed_m2 = 100;	//when the line is lost
@@ -338,6 +334,13 @@ bool follow_line_reverse(int time = 0)
 	
 	vector<int> past_m1;
 	vector<int> past_m2;
+	
+	port_value = rlink.request(READ_PORT_4);
+	
+	if(port_value bitand s_rear )	//junction detected
+	{
+		rear_sensor_flag = true;
+	}
 
 	speed_m1 = -100;
 	speed_m2 = -100;
@@ -350,10 +353,12 @@ bool follow_line_reverse(int time = 0)
 	while(1) // execute until junction, junction check not yet implemented
 	{
 		
+		
+		
 		//for debugging purposes 
-		if(reverse_line_following_watch.read() > time)
+		if(time != 0 && reverse_line_following_watch.read() > time)
 		{
-			cout << " Follow line routine active for 3 seconds" << endl;
+			cout << " Follow line routine active for " << time/1000 << " seconds" << endl;
 			return false; //stop after 20 seconds for now
 		}
 		
@@ -371,10 +376,20 @@ bool follow_line_reverse(int time = 0)
 		
 		port_value = rlink.request(READ_PORT_4);
 		
-		if(port_value bitand s_rear)	//junction detected
+		if(port_value bitand s_rear)	//off junction
+		{
+		}
+		else
+		{
+			rear_sensor_flag = false;
+		}
+		
+		
+		if(port_value bitand s_rear && rear_sensor_flag == false)	//junction detected
 		{
 			break;
 		}
+		
 		
 		
 		// 1 1 0

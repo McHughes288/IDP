@@ -12,7 +12,7 @@
 bool operate_lift(int speed_m3);
 bool pick_up_pallet();
 bool move_forks(int position); //moves fork to one of the given positions: top,middle,bottom
-bool move_forks_one_switch(int position)//moves for to one of the above positions, implementation with only one switch
+bool move_forks_one_switch(int position);//moves for to one of the above positions, implementation with only one switch
 int identify_pallet();	//returns color
 
 #endif
