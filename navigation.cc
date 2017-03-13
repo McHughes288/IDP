@@ -308,181 +308,6 @@ bool follow_line(int time  = 0)
 	return true; // junction detected, returns true
 }
 
-//this will only run for 2-5 seconds or until a junction is detected
-//actual time to be determined while testing
-bool follow_line_reverse(int time = 0)
-{
-	// Sensor values as bits
-	const int s_rear = bit3;	// rear sensor bit
-	const int s_left = bit2;	//left sensor bit
-	const int s_middle = bit1;	//middle sensor bit 
-	const int s_right = bit0;	// right sensor bit
-	
-	int speed_m1; //motor 1 -> left
-	int speed_m2; //motor 2 -> right
-	int port_value;
-	
-	bool rear_sensor_flag;
-	
-	const int k1 = 15;	//constants to be added or subtracted to motor speed to change direction
-	const int k2 = 27;
-	
-	
-	int previous_speed_m1 = 100;	//hold previous values for motors to use after turning 
-	int previous_speed_m2 = 100;	//when the line is lost
-	int counter; 					//counter in order to enter retrace routine
-	
-	vector<int> past_m1;
-	vector<int> past_m2;
-	
-	port_value = rlink.request(READ_PORT_4);
-	
-	if(port_value bitand s_rear )	//junction detected
-	{
-		rear_sensor_flag = true;
-	}
-
-	speed_m1 = -100;
-	speed_m2 = -100;
-	
-	move_robot(speed_m1,speed_m2,255);
-	
-	stopwatch reverse_line_following_watch;	// make a new stopwatch class to keep previous one working;
-	reverse_line_following_watch.start();
-	
-	while(1) // execute until junction, junction check not yet implemented
-	{
-		
-		
-		
-		//for debugging purposes 
-		if(time != 0 && reverse_line_following_watch.read() > time)
-		{
-			cout << " Follow line routine active for " << time/1000 << " seconds" << endl;
-			return false; //stop after 20 seconds for now
-		}
-		
-		move_robot(speed_m1,speed_m2,0);
-		delay(5);
-		
-		previous_speed_m1 = speed_m1;
-		previous_speed_m2 = speed_m2; 
-		
-		past_m1.insert(past_m1.begin(), speed_m1); //store at start of vector, ie at position zero
-		past_m2.insert(past_m2.begin(), speed_m2);
-		
-		speed_m1 = -100;
-		speed_m2 = -100;
-		
-		port_value = rlink.request(READ_PORT_4);
-		
-		if(port_value bitand s_rear)	//off junction
-		{
-		}
-		else
-		{
-			rear_sensor_flag = false;
-		}
-		
-		
-		if(port_value bitand s_rear && rear_sensor_flag == false)	//junction detected
-		{
-			break;
-		}
-		
-		
-		
-		// 1 1 0
-		else if(port_value bitand s_middle && port_value bitand s_left) //robot is leaning to the right 
-		{
-			speed_m1  += k1; //increase speed of left motor
-			speed_m2  -= k1; //decrease speed of right motor
-			counter = 0;
-
- 			continue; 
-		}
-		
-		// 0 1 1
-		else if(port_value bitand s_middle && port_value bitand s_right) //robot is leaning to the left
-		{
-			speed_m1 -= k1; //decrease speed of left motor
-			speed_m2 += k1; //increase speed of right motor
-			counter = 0; // zero counter
-			
-			continue;
-		}
-		
-		// 0 1 0
-		else if(port_value bitand s_middle)
-		{
-			counter = 0; // zero counter
-			//normal operation, continue normally
-			continue;
-		}
-		
-		 // 1 0 0
-		else if(port_value bitand s_left) //robot is too far right
-		{
-			counter = 0; // zero counter
-			speed_m1 += k2;
-			speed_m2 -= k2;
-			continue;
-		}
-		
-		// 0 0 1
-		else if(port_value bitand s_right) //robot is too far left
-		{
-			counter = 0; // zero counter
-			speed_m1 -= k2;
-			speed_m2 += k2;
-			continue;
-		}
-		
-		// 0 0 0
-		else if(((port_value bitand s_left) == 0) && ((port_value bitand s_middle) == 0) && ((port_value bitand s_right) == 0))
-		{
-			speed_m1 = previous_speed_m1;
-			speed_m2 = previous_speed_m2;
-			counter++;
-			
-			if(counter > 500) // if after 2.5 seconds it hasn't found the line
-			{
-				int i = 0;
-				cout << "retracing..." << endl;	
-				//retrace until a sensor finds the line
-				while( (port_value bitand s_left) == 0    && (port_value bitand s_middle) == 0 && (port_value bitand s_right) == 0)
-				{
-					
-					move_robot(-past_m1[i], -past_m2[i], 0);
-					delay(6);
-					
-					i++;
-					
-					//retraced max number of steps
-					if(i == (int)past_m1.size())
-					{
-						break;
-					}
-				}
-				
-				if(port_value bitand s_left || port_value bitand s_middle || port_value bitand s_right)
-				{
-					cout << "Found the Line using retracing!" << endl;
-				}
-				else
-				{
-					cout << "Lost in space...."  << endl;
-					return false;
-				}
-			}
-			continue;
-		}
-		
-	}
-	move_robot(0,0,0);
-	return true; // junction detected, returns true
-}
-
 //returns next junction
 int calcuate_path(int start_location[2], int finish_location[2]);
 
@@ -905,4 +730,26 @@ bool approach_pickup()
 		cout << "Could not reach pick up truck" << endl;
 		return false;
 	}
+}
+
+
+bool back_to_junction(bool already_reversed)
+{
+	if(already_reversed == false)
+	{
+		move_robot(-100,-100,100);		//back up to beclear of obstacles
+		delay(2000);
+		move_robot(0,0,0);
+	}
+
+	turn_right_90();
+
+	current_bearing = current_bearing - 180;
+
+	 if (current_bearing < 0) 
+	 {
+        current_bearing += 360;
+     }
+
+     follow_line(); // goes back to junction and stops
 }

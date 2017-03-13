@@ -14,4 +14,6 @@ bool stop_robot();
 
 bool approach_pickup();
 
+bool move_to_junction(bool already_reversed);
+
 #endif

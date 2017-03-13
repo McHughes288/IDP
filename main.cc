@@ -356,7 +356,7 @@ int main(int argc, const char **argv)
 	delay(2000);
 	stop_robot();
 	
-	follow_line_reverse(1);
+	back_to_junction(false);
 	return 1;
 	
 	// ===== MAIN PROGRAMM =====
@@ -366,6 +366,7 @@ int main(int argc, const char **argv)
 	int colour;
 	int counter;
 	bool lift_flag = true; // to be used to check whether the lift managed to go to it's position
+	bool reversed_flag = false; // A flag used to see whether the robot reversed in the drop pallet routine or not
 
 	//pickup a pallet from P1 which is closer
 
@@ -384,7 +385,7 @@ int main(int argc, const char **argv)
 	colour = identify_pallet();
 	pallets_picked_up++;
 
-	follow_line_reverse(0);
+	back_to_junction(false)(0);
 	current_coordinates.row = J_P1.row;
 	current_coordinates.column = J_P1.column;
 
@@ -408,7 +409,7 @@ int main(int argc, const char **argv)
 		move_forks(TOP);
 		follow_line(0);
 		move_forks(MIDDLE);
-		follow_line_reverse(0); // reverseuntil junction
+		back_to_junction(false); // reverseuntil junction
 		move_forks(BOTTOM);
 		current_coordinates.row = J_D31.row;
 		current_coordinates.column = J_D31.column;
@@ -424,7 +425,7 @@ int main(int argc, const char **argv)
 
 		lift_flag = move_forks(BOTTOM);
 
-		follow_line_reverse(0); //reverse to be able to turn without throwing pallet of the conveyor
+		back_to_junction(false); //reverse to be able to turn without throwing pallet of the conveyor
 		current_coordinates.row = J_C1.row;
 		current_coordinates.column = J_C1.column;
 
@@ -456,7 +457,7 @@ int main(int argc, const char **argv)
 		colour = identify_pallet();
 		pallets_picked_up++;
 
-		follow_line_reverse(0);
+		back_to_junction(false);
 		current_coordinates.row = J_P2.row;
 		current_coordinates.column = J_P2.column;
 
@@ -483,7 +484,7 @@ int main(int argc, const char **argv)
 			move_forks(TOP);
 			follow_line(0);
 			move_forks(MIDDLE);
-			follow_line_reverse(0); // reverse for 1.5 seconds
+			back_to_junction(false); // reverse for 1.5 seconds
 			move_forks(BOTTOM);
 			current_coordinates.row = J_D31.row;
 			current_coordinates.column = J_D31.column;
@@ -500,7 +501,7 @@ int main(int argc, const char **argv)
 			lift_flag = move_forks(BOTTOM);
 
 
-			follow_line_reverse(0); //reverse to be able to turn without throwing pallet of the conveyor
+			back_to_junction(false); //reverse to be able to turn without throwing pallet of the conveyor
 			current_coordinates.row = J_C1.row;
 			current_coordinates.column = J_C1.column;
 
@@ -532,7 +533,7 @@ int main(int argc, const char **argv)
 	colour = identify_pallet();
 	pallets_picked_up++;
 
-	follow_line_reverse(0);
+	back_to_junction(false);
 	current_coordinates.row = J_P1.row;
 	current_coordinates.column = J_P1.column;
 
@@ -556,7 +557,7 @@ int main(int argc, const char **argv)
 		move_forks(TOP);
 		follow_line(0);
 		move_forks(MIDDLE);
-		follow_line_reverse(0); // reverse for 1.5 seconds
+		back_to_junction(false); // reverse for 1.5 seconds
 		move_forks(BOTTOM);
 		current_coordinates.row = J_D31.row;
 		current_coordinates.column = J_D31.column;
@@ -574,7 +575,7 @@ int main(int argc, const char **argv)
 			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
 
-			follow_line_reverse(0);
+			back_to_junction(false);
 			if(lift_flag == false)
 			{
 				move_forks(BOTTOM);
@@ -589,7 +590,7 @@ int main(int argc, const char **argv)
 			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
 
-			follow_line_reverse(0);
+			back_to_junction(false);
 			if(lift_flag == false)
 			{
 				move_forks(BOTTOM);
@@ -619,7 +620,7 @@ int main(int argc, const char **argv)
 
 		move_forks(TOP);
 
-		follow_line_reverse(0);
+		back_to_junction(false);
 
 		current_coordinates.row = J_C2.row;
 		current_coordinates.column = J_C2.column;
@@ -633,7 +634,7 @@ int main(int argc, const char **argv)
 			turn_robot(NORTH);
 			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
-			follow_line_reverse(0); 
+			back_to_junction(false); 
 
 			if(lift_flag == false)
 			{
@@ -653,7 +654,7 @@ int main(int argc, const char **argv)
 			turn_robot(SOUTH);
 			follow_line(0);
 			lift_flag = move_forks(BOTTOM);
-			follow_line_reverse(0); 
+			back_to_junction(false); 
 
 			if(lift_flag == false)
 			{

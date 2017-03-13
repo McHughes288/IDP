@@ -318,6 +318,7 @@ bool move_forks(int position)	//implementation for 3 switches
 			{
 				delay(100);
 				operate_lift(0);
+				
 				return false;
 			}
 

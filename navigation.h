@@ -3,8 +3,6 @@
 
 bool follow_line(int time);
 
-bool follow_line_reverse(int time);
-
 //returns next junction
 int calcuate_path(int start_location[2], int finish_location[2]);
 
@@ -16,5 +14,5 @@ bool make_directions(int bearing);//make directions for junctions
 
 bool approach_pickup_point();
 
-
+bool back_to_junction(); //gos from a drop off point or a pick up point back to the junction
 #endif
