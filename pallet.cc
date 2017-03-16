@@ -49,16 +49,16 @@ int identify_pallet()
 {
 	int red,green,blue;
 	red = green = blue = 0;
-	int all_on;
+
 	
 	const int red_led = 0b01111111;
 	const int green_led = 0b10111111;
 	const int blue_led = 0b11011111;
-	const int all = 0b00011111;
 	
 	const int r_d1_led = 0b01111111; //bit 7 0
 	const int gw_d2_led = 0b10111111; // bit 6 0
 	const int b_d3_led = 0b11011111; // bit 7 0
+	
 	
 	
 	rlink.command(WRITE_PORT_1, red_led);
@@ -76,35 +76,35 @@ int identify_pallet()
 	cout << "Red: " << red << "  Green: " << green << "   Blue: " << blue << endl;
 	
 	
-	rlink.command(WRITE_PORT_1,all);
-	delay(500);
-	all_on = rlink.request(ADC0);
-	cout << "3 white on: " << all_on << endl << endl;
-	
 	rlink.command(WRITE_PORT_1, 0xFF); // make everythin high -> off
 	
-	if((red >= 75 && red <= 90) && (blue >= 85 && blue <= 110) && (green >= 40 && green <= 75))
+	// WHITE
+	if((red >= 75 && red <= 95) && (blue >= 70 && blue <= 90) && (green >= 60 && green <= 90))
 	{
 		cout << "White Pallet" << endl;
 		rlink.command(WRITE_PORT_4, gw_d2_led);
 		return WHITE;
 	}
 	
-	else if((red >= 95 && red <= 125) && (blue >= 170 && blue <= 200) && (green >= 105 && green <= 125))
+	//RED
+	else if((red >= 100 && red <= 120) && (blue >= 155 && blue <= 167) && (green >= 150 && green <= 165))
 	{
 		cout << "Red Pallet" << endl;
 		rlink.command(WRITE_PORT_4, r_d1_led);
 		return RED;
 	}
 	
-	else if((red >= 126 && red <= 157) && (blue >= 140 && blue <= 190) && (green >= 105 && green <= 125))
+	
+	//GREEN
+	else if((red >= 150 && red <= 160) && (blue >= 150 && blue <= 160) && (green >= 165 && green <= 180))
 	{
 		cout << "Green Pallet" << endl;
 		rlink.command(WRITE_PORT_4, gw_d2_led);
 		return GREEN;
 	}
 	
-	else if((red >= 150 && red <= 165) && (blue >= 190 && blue <= 210) && (green >= 130 && green <= 145))
+	//BLACK
+	else if((red >= 161 && red <= 180) && (blue >= 161 && blue <= 175) && (green >= 178 && green <= 190))
 	{
 		cout << "Black Pallet" << endl;
 		rlink.command(WRITE_PORT_4, b_d3_led);
@@ -219,7 +219,9 @@ bool move_forks_one_switch(int position)
 			{
 				delay(10);
 				operate_lift(0);
-				follow_line_reverse(2);	// move back and then turn
+				move_robot(-100,-100,100);	// move back and then turn
+				delay(2000);
+				stop_robot();
 			}
 
 			delay(5);
@@ -244,12 +246,17 @@ bool move_forks_one_switch(int position)
 
 bool move_forks(int position)	//implementation for 3 switches
 {
+	
+	cout << "Moving lift" << endl;
+	
 	int value;
 	bool pallet_on_flag;
-	const int fork_switch = 0b00000000;
-
+	const int fork_switch = 0b00010000;
+		
+	value = rlink.request(READ_PORT_1);
+	
 	//to stop the lowering ifpallet no longer on forks
-	if(value bitand fork_switch)	//check if there is a pallet, needed for lowering
+	if((value bitand fork_switch) == 0)	//check if there is a pallet, needed for lowering
 	{
 		pallet_on_flag = true;//no pallet on fork
 	}
@@ -257,11 +264,10 @@ bool move_forks(int position)	//implementation for 3 switches
 	{
 		pallet_on_flag = false;//pallet on fork
 	}
-
-	cout << "Switches not yet set!!!" << endl;  
-	const int bottom_switch = 0b00000000;
-	const int middle_switch = 0b00000000;
-	const int top_switch = 0b00000000;
+  
+	const int bottom_switch = 0b00000100;
+	const int middle_switch = 0b00001000;
+	const int top_switch = 0b00000010;
 
 	if(position == fork_height)
 	{
@@ -271,7 +277,7 @@ bool move_forks(int position)	//implementation for 3 switches
 
 	else if (position > fork_height)
 	{
-		operate_lift(100);
+		operate_lift(127);
 
 		while(1)
 		{
@@ -280,71 +286,107 @@ bool move_forks(int position)	//implementation for 3 switches
 
 			if(position == BOTTOM)
 			{
-				if(value bitand bottom_switch)
+				
+				if((value bitand bottom_switch) == 0)
 				{
+					cout << "bottom mechnism switch pressed" << endl;
+					operate_lift(0);
+					fork_height = position;
+					return true;
 					break;
 				}
 			}
 
 			if(position == MIDDLE)
 			{
-				if(value bitand middle_switch)
+				
+				if((value bitand middle_switch) == 0)
 				{
+					cout << "middle mechnism switch pressed" << endl;
+					operate_lift(0);
+					fork_height = position;
+					return true;
 					break;
 				}
 			}
 
 			if(position == TOP)
 			{
-				if(value bitand top_switch)
+				
+				if((value bitand top_switch) == 0)
 				{
+					cout << "top mechnism switch pressed" << endl;
+					operate_lift(0);
+					fork_height = position;
+					return true;
 					break;
 				}
 			}
+			
+			
 		}
-
+		
 		operate_lift(0);
+
+		
 	}
 
 	else if (position < fork_height)
 	{
-		operate_lift(-75);
+		operate_lift(-110);
 
 		while(1)
 		{
 			value = rlink.request(READ_PORT_1);		
 
-			if((value bitand fork_switch) == false && pallet_on_flag)	//if pallet dropped and  at position wanted quit returning false
+			if((value bitand fork_switch) != 0 && pallet_on_flag)	//if pallet dropped and  at position wanted quit returning false
 			{
+				cout << "Switch on fork released" << endl;
 				delay(100);
 				operate_lift(0);
-				
+				fork_height = position;
 				return false;
 			}
 
 			if(position == BOTTOM)
 			{
-				if(value bitand bottom_switch)
+				
+				if((value bitand bottom_switch) == 0)
 				{
+					cout << "bottom mechnism switch pressed" << endl;
+					operate_lift(0);
+					fork_height = position;
+					return true;
 					break;
 				}
 			}
 
 			if(position == MIDDLE)
 			{
-				if(value bitand middle_switch)
+				
+				if((value bitand middle_switch) == 0)
 				{
+					cout << "middle mechnism switch pressed" << endl;
+					operate_lift(0);
+					fork_height = position;
+					return true;
 					break;
 				}
 			}
 
 			if(position == TOP)
 			{
-				if(value bitand top_switch)
+				
+				if((value bitand top_switch) == 0)
 				{
+					cout << "top mechnism switch pressed" << endl;
+					operate_lift(0);
+					position = fork_height;
+					return true;
 					break;
 				}
 			}
+		
 		}
 
 		operate_lift(0);

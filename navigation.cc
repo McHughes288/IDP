@@ -13,6 +13,7 @@
 #include "global.h"
 #include "movement.h"
 #include "navigation.h"
+#include "pallet.h"
 
 using namespace std;
 
@@ -128,7 +129,7 @@ vector<int> bearing_vector;
 
 
 
-bool follow_line(int time  = 0)
+bool follow_line(int time)
 {
 	int switch_value;
 	
@@ -138,8 +139,8 @@ bool follow_line(int time  = 0)
 	const int s_middle = bit1;	//middle sensor bit 
 	const int s_right = bit0;	// right sensor bit
 	
-	const int front_microswitch = 0b00000000;
-	cout << "front switch value not set" << endl;
+	const int front_microswitch = 0b00000001;
+	//cout << "front switch value not set" << endl;
 
 	int speed_m1; //motor 1 -> left
 	int speed_m2; //motor 2 -> right
@@ -178,14 +179,15 @@ bool follow_line(int time  = 0)
 			return false; //stop after 20 seconds for now
 		}
 
-		if(time != 0 && line_following_watch.read() == time)
+		if(time != 0 && line_following_watch.read() > time)
 		{
 			cout << "Folloed line for: " << time << " seconds, now returning" << endl;
 			return false; // return false to know that it was the timer and not a junction
 		}
 
-		if(switch_value bitand front_microswitch)
+		if((switch_value bitand front_microswitch) == 0b00000000)
 		{
+			cout << "fron_microswitch pressed" << endl;
 			stop_robot();
 			return false; //indicate that we hit something
 		}
@@ -703,7 +705,7 @@ bool approach_pickup()
 	if(current_bearing != SOUTH)
 	{
 		turn_robot(NORTH);
-		val = follow_line(4000); //follow line north for 4 seconds;
+		val = follow_line(0); //follow line north for 4 seconds;
 
 		if(val)	//val is true if the follow line reaches a line and returns
 		{
@@ -712,11 +714,23 @@ bool approach_pickup()
 
 		else
 		{
-			turn_left_90();				//a single turn will happen since the robot is on
+			turn_right_90();				//a single turn will happen since the robot is on
 										//a straight section of the line
 			current_bearing = SOUTH;	//the current bearing has to be set independently 
 		}
 	}
+	// ==== FLASH LED HERE ====
+		const int new_load_led = 0b11101111;
+	rlink.command(WRITE_PORT_4, new_load_led);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, 0xFF);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, new_load_led);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, 0xFF);
+	delay(4000);
+	
+	move_forks(BOTTOM);
 	follow_line(0);//will follow line up to the junction before the pickup point
 	val = follow_line(0);//will follow the line up to the truck
 
@@ -739,17 +753,38 @@ bool back_to_junction(bool already_reversed)
 	{
 		move_robot(-100,-100,100);		//back up to beclear of obstacles
 		delay(2000);
-		move_robot(0,0,0);
+		move_robot(0,0,100);
 	}
+		
+	// == move lift up to avoid problems!!
+	move_forks(TOP);
+     follow_line(0); // goes back to junction and stops
+     return true;
+}
 
-	turn_right_90();
 
-	current_bearing = current_bearing - 180;
-
-	 if (current_bearing < 0) 
-	 {
-        current_bearing += 360;
-     }
-
-     follow_line(); // goes back to junction and stops
+bool JC1_to_JP2()
+{
+	turn_robot(NORTH);
+	follow_line(0);
+	turn_robot(WEST);
+	follow_line(0);
+	turn_robot(SOUTH);
+	
+	
+	// ==== FLASH LED HERE ====
+	move_forks(BOTTOM);
+	const int new_load_led = 0b11101111;
+	rlink.command(WRITE_PORT_4, new_load_led);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, 0xFF);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, new_load_led);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, 0xFF);
+	delay(4000);
+	
+	follow_line(0);
+	
+	return true;
 }

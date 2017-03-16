@@ -107,36 +107,36 @@ bool turn_robot(int angle) {
         angle_difference += 360;
     }
     
-    cout << endl << "Start Bearing: " << current_bearing << endl;
-    cout << "Finish Bearing: " << angle << endl;
-    cout << "Angle Difference: " << angle_difference << endl;
+    //cout << endl << "Start Bearing: " << current_bearing << endl;
+    //cout << "Finish Bearing: " << angle << endl;
+    //cout << "Angle Difference: " << angle_difference << endl;
     
     // Turn right if angle difference is positive
     if (angle_difference > 0) {
-        cout << "Turning right..." << endl;
+        //cout << "Turning right..." << endl;
         turn_right_90();
         
         // Turn again for full 180
         if (angle_difference > 90) {
-            cout << "Turning right again..." << endl;
+            //cout << "Turning right again..." << endl;
             turn_right_90();
         }
         
         
     // Turn left if angle difference is negative
     } else if (angle_difference < 0) {
-        cout << "Turning left..." << endl;
+        //cout << "Turning left..." << endl;
         turn_left_90();
         
         // Turn again for full 180
         if (angle_difference <- 90) {
-            cout << "Turning left again..." << endl;
+            //cout << "Turning left again..." << endl;
             turn_left_90();
         }
         
     // If angle difference is 0 do nothing
     } else {
-        cout << "Don't need to turn" << endl;
+        //cout << "Don't need to turn" << endl;
     }
     
     // NOW DONE WITHIN OTHER FUNCTIONS
@@ -145,18 +145,18 @@ bool turn_robot(int angle) {
     
     // Check to see if the robot is in the position it should be
     if (current_bearing == angle) {
-        cout << "Now at correct bearing" << endl;
+        //cout << "Now at correct bearing" << endl;
         return true;
     } else {
-        cout << "Something went wrong, not at correct bearing" << endl;
+       //cout << "Something went wrong, not at correct bearing" << endl;
         return false;
     }
 
 }
 
 bool turn_left_90() {
-    int speed_m1 = -55;
-    int speed_m2 = 45;
+    int speed_m1 = -100;
+    int speed_m2 = 100;
     
     int state = 0; // 0 is when rear sensor is active before turning
     // 1 is when the rear sensor isnt active as the robot is turning
@@ -166,6 +166,7 @@ bool turn_left_90() {
     const int s_middle = bit1;	//middle sensor bit
     //const int s_right = bit0;	//right sensor bit
     //const int s_left = bit2;	//left sensor bit
+    //const int s_rear = bit3;	// rear sensor bit
     
     
     move_robot(speed_m1, speed_m2);
@@ -179,11 +180,12 @@ bool turn_left_90() {
         {
         } else {
             state = 1;
-            continue;
+            //continue;
         }
         
         // robot has completed the LEFT turn (checks right sensor)
         if (port_value bitand s_middle && state == 1) {
+			delay(250);
             stop_robot();
             state = 2;
             break;
@@ -197,7 +199,7 @@ bool turn_left_90() {
         current_bearing += 360;
     }
     
-    cout << "Stopped left turn. Current Bearing: " << current_bearing << endl;
+    //cout << "Stopped left turn. Current Bearing: " << current_bearing << endl;
     
     return true;
     
@@ -206,8 +208,8 @@ bool turn_left_90() {
 
 
 bool turn_right_90() {
-    int speed_m1 = 55;
-    int speed_m2 = -45;
+    int speed_m1 = 100;
+    int speed_m2 = -100;
     
     int state = 0; // 0 is when rear sensor is active before turning
     // 1 is when the rear sensor isnt active as the robot is turning
@@ -218,6 +220,8 @@ bool turn_right_90() {
     const int s_middle = bit1;	//middle sensor bit
 	//const int s_right = bit0;	//right sensor bit
 	//const int s_left = bit2;	//left sensor bit
+	//const int s_rear = bit3;	// rear sensor bit
+	
     move_robot(speed_m1, speed_m2);
 
     while(state != 2){
@@ -229,11 +233,12 @@ bool turn_right_90() {
         {
         } else {
             state = 1;
-            continue;
+            //continue;
         }
         
         // robot has completed the RIGHT turn (checks left sensor)
         if (port_value bitand s_middle && state == 1) {
+			delay(250);
             stop_robot();
             state = 2;
             break;
@@ -247,7 +252,7 @@ bool turn_right_90() {
         current_bearing -= 360;
     }
     
-    cout << "Stopped right turn. Current Bearing: " << current_bearing << endl;
+    //cout << "Stopped right turn. Current Bearing: " << current_bearing << endl;
 
     
     return true;
