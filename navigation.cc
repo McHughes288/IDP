@@ -146,23 +146,23 @@ bool follow_line(int time)
 	int speed_m2; //motor 2 -> right
 	int port_value;
 	
-	const int k1 = 15;	//constants to be added or subtracted to motor speed to change direction
-	const int k2 = 27;
+	const int k1 = 30;	//constants to be added or subtracted to motor speed to change direction
+	const int k2 = 50;
 	
 	bool junction_flag = false; //flag set to true when the fron 3 sensors detect a junction
 								//used afterwords in conjucntion with the rear sensor to stop
 								//at a junction
 
 	
-	int previous_speed_m1 = 100;	//hold previous values for motors to use after turning 
-	int previous_speed_m2 = 100;	//when the line is lost
+	int previous_speed_m1 = 127;	//hold previous values for motors to use after turning 
+	int previous_speed_m2 = 127;	//when the line is lost
 	int counter; 					//counter in order to enter retrace routine
 	
 	vector<int> past_m1;
 	vector<int> past_m2;
 
-	speed_m1 = 100;
-	speed_m2 = 100;
+	speed_m1 = 127;
+	speed_m2 = 127;
 	
 	move_robot(speed_m1,speed_m2,255);
 	
@@ -201,8 +201,8 @@ bool follow_line(int time)
 		past_m1.insert(past_m1.begin(), speed_m1); //store at start of vector, ie at position zero
 		past_m2.insert(past_m2.begin(), speed_m2);
 		
-		speed_m1 = 100;
-		speed_m2 = 100;
+		speed_m1 = 127;
+		speed_m2 = 127;
 		
 		port_value = rlink.request(READ_PORT_4);
 		
@@ -223,7 +223,7 @@ bool follow_line(int time)
 		else if(port_value bitand s_middle && port_value bitand s_left) //robot is leaning to the right 
 		{
 			speed_m1  -= k1; //decrease speed of left motor
-			speed_m2  += k1; //increase speed of right motor
+			//speed_m2  += k1; //increase speed of right motor
 			counter = 0;
 
  			continue; 
@@ -232,7 +232,7 @@ bool follow_line(int time)
 		// 0 1 1
 		else if(port_value bitand s_middle && port_value bitand s_right) //robot is leaning to the left
 		{
-			speed_m1 += k1; //increase speed of left motor
+			//speed_m1 += k1; //increase speed of left motor
 			speed_m2 -= k1; //decrease speed of right motor
 			counter = 0; // zero counter
 			
@@ -252,7 +252,7 @@ bool follow_line(int time)
 		{
 			counter = 0; // zero counter
 			speed_m1 -= k2;
-			speed_m2 += k2;
+			//speed_m2 += k2;
 			continue;
 		}
 		
@@ -260,7 +260,7 @@ bool follow_line(int time)
 		else if(port_value bitand s_right) //robot is too far left
 		{
 			counter = 0; // zero counter
-			speed_m1 += k2;
+			//speed_m1 += k2;
 			speed_m2 -= k2;
 			continue;
 		}
@@ -709,26 +709,18 @@ bool approach_pickup()
 
 		if(val)	//val is true if the follow line reaches a line and returns
 		{
-			turn_robot(SOUTH);
+			turn_left_90();
+			turn_left_90();
+			current_bearing = SOUTH;
 		}
 
 		else
 		{
-			turn_right_90();				//a single turn will happen since the robot is on
+			turn_left_90();				//a single turn will happen since the robot is on
 										//a straight section of the line
 			current_bearing = SOUTH;	//the current bearing has to be set independently 
 		}
 	}
-	// ==== FLASH LED HERE ====
-		const int new_load_led = 0b11101111;
-	rlink.command(WRITE_PORT_4, new_load_led);
-	delay(2000);
-	rlink.command(WRITE_PORT_4, 0xFF);
-	delay(2000);
-	rlink.command(WRITE_PORT_4, new_load_led);
-	delay(2000);
-	rlink.command(WRITE_PORT_4, 0xFF);
-	delay(4000);
 	
 	move_forks(BOTTOM);
 	follow_line(0);//will follow line up to the junction before the pickup point
@@ -752,7 +744,7 @@ bool back_to_junction(bool already_reversed)
 	if(already_reversed == false)
 	{
 		move_robot(-100,-100,100);		//back up to beclear of obstacles
-		delay(2000);
+		delay(1500);
 		move_robot(0,0,100);
 	}
 		
@@ -774,6 +766,8 @@ bool JC1_to_JP2()
 	
 	// ==== FLASH LED HERE ====
 	move_forks(BOTTOM);
+	
+	/*
 	const int new_load_led = 0b11101111;
 	rlink.command(WRITE_PORT_4, new_load_led);
 	delay(2000);
@@ -783,7 +777,7 @@ bool JC1_to_JP2()
 	delay(2000);
 	rlink.command(WRITE_PORT_4, 0xFF);
 	delay(4000);
-	
+	*/
 	follow_line(0);
 	
 	return true;

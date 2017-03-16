@@ -58,6 +58,8 @@ int identify_pallet()
 	const int r_d1_led = 0b01111111; //bit 7 0
 	const int gw_d2_led = 0b10111111; // bit 6 0
 	const int b_d3_led = 0b11011111; // bit 7 0
+	const int white_leds = 0b00011111;
+	
 	
 	
 	
@@ -79,15 +81,15 @@ int identify_pallet()
 	rlink.command(WRITE_PORT_1, 0xFF); // make everythin high -> off
 	
 	// WHITE
-	if((red >= 75 && red <= 95) && (blue >= 70 && blue <= 90) && (green >= 60 && green <= 90))
+	if((red >= 50 && red <= 99) && (blue >= 50 && blue <= 100) && (green >= 60 && green <= 100))
 	{
 		cout << "White Pallet" << endl;
-		rlink.command(WRITE_PORT_4, gw_d2_led);
+		rlink.command(WRITE_PORT_4, white_leds);
 		return WHITE;
 	}
 	
 	//RED
-	else if((red >= 100 && red <= 120) && (blue >= 155 && blue <= 167) && (green >= 150 && green <= 165))
+	else if((red >= 100 && red <= 130) && (blue >= 150 && blue <= 167) && (green >= 140 && green <= 165))
 	{
 		cout << "Red Pallet" << endl;
 		rlink.command(WRITE_PORT_4, r_d1_led);
@@ -96,7 +98,7 @@ int identify_pallet()
 	
 	
 	//GREEN
-	else if((red >= 150 && red <= 160) && (blue >= 150 && blue <= 160) && (green >= 165 && green <= 180))
+	else if((red >= 145 && red <= 160) && (blue >= 145 && blue <= 165) && (green >= 165 && green <= 180))
 	{
 		cout << "Green Pallet" << endl;
 		rlink.command(WRITE_PORT_4, gw_d2_led);
@@ -104,7 +106,7 @@ int identify_pallet()
 	}
 	
 	//BLACK
-	else if((red >= 161 && red <= 180) && (blue >= 161 && blue <= 175) && (green >= 178 && green <= 190))
+	else if((red >= 161 && red <= 180) && (blue >= 161 && blue <= 200) && (green >= 149 && green <= 200))
 	{
 		cout << "Black Pallet" << endl;
 		rlink.command(WRITE_PORT_4, b_d3_led);
@@ -394,4 +396,16 @@ bool move_forks(int position)	//implementation for 3 switches
 
 	fork_height = position;
 	return true;
+}
+
+void new_load_led() {
+	const int new_load_led = 0b11101111;
+	rlink.command(WRITE_PORT_4, new_load_led);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, 0xFF);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, new_load_led);
+	delay(2000);
+	rlink.command(WRITE_PORT_4, 0xFF);
+	delay(4000);
 }

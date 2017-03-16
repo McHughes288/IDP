@@ -155,8 +155,8 @@ bool turn_robot(int angle) {
 }
 
 bool turn_left_90() {
-    int speed_m1 = -100;
-    int speed_m2 = 100;
+    int speed_m1 = -126;
+    int speed_m2 = 126;
     
     int state = 0; // 0 is when rear sensor is active before turning
     // 1 is when the rear sensor isnt active as the robot is turning
@@ -185,7 +185,7 @@ bool turn_left_90() {
         
         // robot has completed the LEFT turn (checks right sensor)
         if (port_value bitand s_middle && state == 1) {
-			delay(250);
+			delay(100); //was 250
             stop_robot();
             state = 2;
             break;
@@ -208,8 +208,8 @@ bool turn_left_90() {
 
 
 bool turn_right_90() {
-    int speed_m1 = 100;
-    int speed_m2 = -100;
+    int speed_m1 = 126;
+    int speed_m2 = -126;
     
     int state = 0; // 0 is when rear sensor is active before turning
     // 1 is when the rear sensor isnt active as the robot is turning
@@ -238,7 +238,7 @@ bool turn_right_90() {
         
         // robot has completed the RIGHT turn (checks left sensor)
         if (port_value bitand s_middle && state == 1) {
-			delay(250);
+			delay(100); // was 250 
             stop_robot();
             state = 2;
             break;
